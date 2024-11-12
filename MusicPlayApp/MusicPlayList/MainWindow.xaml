@@ -45,7 +45,7 @@
             <Button x:Name="LoadBtn" Content="Load" Width="80" 
             Click="LoadBtn_Click" Style="{StaticResource StyledButton}"/>
             <Button x:Name="SaveBtn" Content="Save" Width="80" 
-            Click="SaveBtn_Click" Margin="10,0,0,0" Style="{StaticResource StyledButton}"/>
+             Margin="10,0,0,0" Style="{StaticResource StyledButton}"/>
             <Button x:Name="DeleteBtn" Content="Delete" Width="80" 
             Click="DeleteBtn_Click" Style="{StaticResource StyledButton}"/>
         </WrapPanel>

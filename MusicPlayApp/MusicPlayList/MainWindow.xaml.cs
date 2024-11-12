@@ -44,6 +44,7 @@ namespace MusicPlayList
             InitializeComponent();
             timer = new DispatcherTimer();
 
+
             // Configure services
             var serviceCollection = new ServiceCollection();
             ConfigureServices(serviceCollection);
@@ -106,6 +107,7 @@ namespace MusicPlayList
             timer = new DispatcherTimer();
             timer.Interval = TimeSpan.FromSeconds(1);
             timer.Tick += Timer_Tick;
+            CDImage.Visibility = Visibility.Hidden;
         }
 
         private void Timer_Tick(object sender, EventArgs e)
@@ -156,6 +158,18 @@ namespace MusicPlayList
         {
             txtText.Text = playlistListBox.SelectedItem.ToString();
             mediaPlayer.Source = new Uri(paths[playlistListBox.SelectedIndex]);
+            string selectedPath = paths[playlistListBox.SelectedIndex];
+            string fileExtension = System.IO.Path.GetExtension(selectedPath).ToLower();
+            bool isMusic = fileExtension == ".mp3" || fileExtension == ".wav";
+            if (isMusic)
+            {
+                CDImage.Visibility = Visibility.Visible;
+                StartRotatingDisk();
+            }
+            else
+            {
+                CDImage.Visibility = Visibility.Hidden;
+            }
             mediaPlayer.Play();
             timer.Start();
 
@@ -164,12 +178,17 @@ namespace MusicPlayList
         private void PlayButton_Click(object sender, RoutedEventArgs e)
         {
             mediaPlayer.Play();
+            StartRotatingDisk();
             timer.Start();
         }
 
         private void PauseButton_Click(object sender, RoutedEventArgs e)
         {
             mediaPlayer.Pause();
+            if (timer != null)
+            {
+                timer.Stop();
+            }
         }
 
         private void StopButton_Click(object sender, RoutedEventArgs e)
@@ -220,6 +239,10 @@ namespace MusicPlayList
                     playlistListBox.SelectedIndex++;
                 else
                     playlistListBox.SelectedIndex = 0;
+            }
+            if (timer != null)
+            {
+                timer.Stop();
             }
         }
 
@@ -290,6 +313,18 @@ namespace MusicPlayList
             {
                 txtText.Text = FavoriteListBox.SelectedItem.ToString();
                 mediaPlayer.Source = new Uri(txtText.Text);
+                string selectedPath = paths[playlistListBox.SelectedIndex];
+                string fileExtension = System.IO.Path.GetExtension(selectedPath).ToLower();
+                bool isMusic = fileExtension == ".mp3" || fileExtension == ".wav";
+                if (isMusic)
+                {
+                    CDImage.Visibility = Visibility.Visible;
+                    StartRotatingDisk();
+                }
+                else
+                {
+                    CDImage.Visibility = Visibility.Hidden;
+                }
                 mediaPlayer.Play();
                 timer.Start();
             }
@@ -323,6 +358,22 @@ namespace MusicPlayList
             {
                 MessageBox.Show("Vui lòng chọn một bài hát để thêm vào danh sách yêu thích.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
+        }
+
+        private void StartRotatingDisk()
+        {
+            if (timer == null)
+                return;
+
+            timer.Interval = TimeSpan.FromMilliseconds(20); 
+            timer.Tick += (s, e) =>
+            {
+                rotateTransform.Angle += 1;
+                if (rotateTransform.Angle >= 360)
+                {
+                    rotateTransform.Angle = 0;
+                }
+            };
         }
     }
 }

@@ -19,7 +19,7 @@ namespace MusicPlayList
 
             // Khởi tạo UserRepo và UserService
             var userRepo = new UserRepo(context); // Khởi tạo UserRepo với context
-            _userService = new UserService(userRepo); // Truyền UserRepo vào UserService
+            _userService = new UserService(userRepo); 
         }
 
         private void LoginButton_Click(object sender, RoutedEventArgs e)

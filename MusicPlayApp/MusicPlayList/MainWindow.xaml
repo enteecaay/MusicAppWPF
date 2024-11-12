@@ -22,20 +22,21 @@
 
         <!-- Playlist ListBox -->
         <ListBox x:Name="playlistListBox" Width="220" Height="270" 
-                 HorizontalAlignment="Left" VerticalAlignment="Top" 
-                 Margin="10,40,0,0" 
-                 SelectionChanged="PlaylistListBox_SelectionChanged" 
-                 Background="#444444" Foreground="White" 
-                 FontFamily="Segoe UI" FontSize="12" />
+         HorizontalAlignment="Left" VerticalAlignment="Top" 
+         Margin="10,40,0,0" 
+         ItemsSource="{Binding Playlists}"
+         SelectedItem="{Binding SelectedPlaylist, Mode=TwoWay}"
+         Background="#444444" Foreground="White" 
+         FontFamily="Segoe UI" FontSize="12" />
 
         <!-- Favorite ListBox -->
         <ListBox x:Name="FavoriteListBox" Width="220" Height="270" 
-                 HorizontalAlignment="Right" VerticalAlignment="Top" 
-                 Margin="0,40,10,0" 
-                 SelectionChanged="FavoriteListBox_SelectionChanged" 
-                 Background="#444444" Foreground="White" 
-                 FontFamily="Segoe UI" FontSize="12" />
-
+         HorizontalAlignment="Right" VerticalAlignment="Top" 
+         Margin="0,40,10,0" 
+         ItemsSource="{Binding FavoriteSongs}"
+         SelectedItem="{Binding SelectedFavorite, Mode=TwoWay}"
+         Background="#444444" Foreground="White" 
+         FontFamily="Segoe UI" FontSize="12" />
         <!-- Buttons for Favorite List Operations -->
         <WrapPanel Orientation="Horizontal" HorizontalAlignment="Right" 
            Margin="0,320,10,0" VerticalAlignment="Top" ItemWidth="90" ItemHeight="30" Width="196">
@@ -97,10 +98,11 @@
 
         <!-- Song Information TextBox -->
         <TextBox x:Name="txtText" Width="400" Height="30" 
-                 Margin="250,280,250,0" VerticalAlignment="Top" 
-                 TextWrapping="Wrap" Background="#444444" 
-                 Foreground="White" FontFamily="Segoe UI" FontSize="12"
-                 HorizontalAlignment="Center" 
-                 TextAlignment="Center" IsReadOnly="True"/>
+         Margin="250,280,250,0" VerticalAlignment="Top" 
+         TextWrapping="Wrap" Background="#444444" 
+         Foreground="White" FontFamily="Segoe UI" FontSize="12"
+         HorizontalAlignment="Center" 
+         TextAlignment="Center" IsReadOnly="True"
+         Text="{Binding CurrentSongInfo}"/>
     </Grid>
 </Window>

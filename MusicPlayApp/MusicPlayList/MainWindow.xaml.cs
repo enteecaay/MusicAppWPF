@@ -1,4 +1,7 @@
-﻿using Microsoft.Win32;
+﻿using Microsoft.VisualBasic.ApplicationServices;
+using Microsoft.Win32;
+using MusicPlayApp.BLL.Service;
+using MusicPlayApp.DLL.Entities;
 using System.IO;
 using System.Text;
 using System.Windows;
@@ -11,6 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+
 
 namespace MusicPlayList
 {
@@ -26,13 +30,17 @@ namespace MusicPlayList
         private string[] files;
         private string[] paths;
 
+        private SongService _songService = new SongService();
+
+        public MusicPlayApp.DLL.Entities.User CurrentUser { get; set; }
+
         public MainWindow()
         {
-
             InitializeComponent();
             InitializePlayer();
             volumeSlider.Value = 100;
             VolumeText.Text = "100%";
+            LoadUserSongs();
 
         }
 
@@ -192,6 +200,21 @@ namespace MusicPlayList
         private void Addbtn_Click(object sender, RoutedEventArgs e)
         {
             
+        }
+
+        private void playlistListBox_Loaded(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private async void LoadUserSongs()
+        {
+            var songs = await _songService.GetSongsByUserIdAsync(CurrentUser.UserId);
+            foreach (var song in songs)
+            {
+                playlist.Add(song.Title);
+                playlistListBox.Items.Add(song.Title);
+            }
         }
     }
 }

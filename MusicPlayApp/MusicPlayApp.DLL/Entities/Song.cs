@@ -11,7 +11,7 @@ public partial class Song
 
     public string Artist { get; set; } = null!;
 
-    public string? Album { get; set; }
+    public string? Album { get; set; } //url
 
     public virtual ICollection<FavoriteList> FavoriteLists { get; set; } = new List<FavoriteList>();
 

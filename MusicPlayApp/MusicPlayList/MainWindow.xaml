@@ -27,7 +27,7 @@
          ItemsSource="{Binding Playlists}"
          SelectedItem="{Binding SelectedPlaylist, Mode=TwoWay}"
          Background="#444444" Foreground="White" 
-         FontFamily="Segoe UI" FontSize="12" />
+         FontFamily="Segoe UI" FontSize="12" Loaded="playlistListBox_Loaded" />
 
         <!-- Favorite ListBox -->
         <ListBox x:Name="FavoriteListBox" Width="220" Height="270" 

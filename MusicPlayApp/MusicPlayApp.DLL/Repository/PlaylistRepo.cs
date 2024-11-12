@@ -9,11 +9,12 @@ namespace MusicPlayApp.DLL.Repository
 {
     public class PlaylistRepo
     {
-        MusicPlayerAppContext _context;
-        public void Create(int UserId)
+        private MusicPlayerAppContext _context;
+        public void Create(Playlist obj)
         {
-            _context = new();
-            //_context.Playlists.Add();
+            _context = new MusicPlayerAppContext();
+            _context.Playlists.Add(obj);
+            _context.SaveChanges();
         }
     }
 }

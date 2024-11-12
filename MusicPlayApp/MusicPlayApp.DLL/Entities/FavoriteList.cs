@@ -11,9 +11,9 @@ public partial class FavoriteList
 
     public int SongId { get; set; }
 
-    public string ListName { get; set; } = null!;
+    public string ListName { get; set;}
 
-    public virtual Song Song { get; set; } = null!;
+    public virtual Song Song { get; set; }
 
-    public virtual User User { get; set; } = null!;
+    public virtual User User { get; set; }
 }

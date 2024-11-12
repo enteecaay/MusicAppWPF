@@ -7,9 +7,9 @@ public partial class Song
 {
     public int SongId { get; set; }
 
-    public string Title { get; set; } = null!;
+    public string Title { get; set; }
 
-    public string Artist { get; set; } = null!;
+    public string Artist { get; set; }
 
     public string? Album { get; set; } //url
 

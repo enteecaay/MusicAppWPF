@@ -41,6 +41,7 @@ namespace MusicPlayList
             volumeSlider.Value = 100;
             VolumeText.Text = "100%";
             //LoadUserSongs();
+            LoadTitleAllSongs();
 
         }
 
@@ -67,7 +68,10 @@ namespace MusicPlayList
 
         private void ImportButton_Click(object sender, RoutedEventArgs e)
         {
-            
+            AddSongWindow addSong = new AddSongWindow();
+            addSong.ShowDialog();
+            LoadTitleAllSongs();
+
         }
 
 
@@ -219,6 +223,21 @@ namespace MusicPlayList
             {
                 return;
             }
+        }
+
+        public async void LoadTitleAllSongs()
+        {
+            var songs = await _songService.GetAllSongsAsync();
+            foreach (var song in songs)
+            {
+                playlist.Add(song.Title);
+                playlistListBox.Items.Add(song.Title);
+            }
+            if (songs == null)
+            {
+                return;
+            }
+
         }
     }
 }

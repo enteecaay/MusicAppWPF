@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32;
+using MusicPlayApp.BLL.Service;
 using MusicPlayApp.DLL.Entities;
 using System.Windows;
 
@@ -6,6 +7,7 @@ namespace MusicPlayList
 {
     public partial class AddSongWindow : Window
     {
+        private SongService _songService = new();
         public AddSongWindow()
         {
             InitializeComponent();
@@ -26,8 +28,7 @@ namespace MusicPlayList
                 Album = albumFilePath
             };
 
-            // Save the new song to the database (implement the logic as needed)
-            // Example: _songService.AddSong(newSong);
+            _songService.AddSong(newSong);
 
             // Close the window
             this.DialogResult = true;

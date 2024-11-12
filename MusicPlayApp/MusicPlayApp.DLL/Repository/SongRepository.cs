@@ -14,6 +14,7 @@ namespace MusicPlayApp.DLL.Repository
 
         public async Task<List<Song>> GetAllSongsAsync()
         {
+            _context = new MusicPlayerAppContext();
             return await _context.Songs
                 .Include(s => s.FavoriteLists)
                 .Include(s => s.Playlists)
@@ -21,8 +22,9 @@ namespace MusicPlayApp.DLL.Repository
                 .ToListAsync();
         }
 
-        public async Task<List<Song>>? GetSongsByUserIdAsync(int userId)
+        public async Task<List<Song>> GetSongsByUserIdAsync(int userId)
         {
+            _context = new MusicPlayerAppContext();
             return await _context.Songs
                 .Include(s => s.FavoriteLists)
                 .Include(s => s.Playlists)
@@ -30,6 +32,20 @@ namespace MusicPlayApp.DLL.Repository
                 .Where(s => s.Playlists.Any(p => p.UserId == userId))
                 .ToListAsync();
 
+        }
+
+        public void AddSong(Song song)
+        {
+            _context = new();
+            _context.Songs.Add(song);
+            _context.SaveChanges();
+        }
+
+        public void Update(Song song)
+        {
+            _context = new();
+            _context.Songs.Add(song);
+            _context.SaveChanges();
         }
 
 

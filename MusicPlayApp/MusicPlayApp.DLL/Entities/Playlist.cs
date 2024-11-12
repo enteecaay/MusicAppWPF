@@ -9,11 +9,11 @@ public partial class Playlist
 
     public int UserId { get; set; }
 
-    public int SongId { get; set; }
+    public int? SongId { get; set; }
 
-    public string PlaylistName { get; set; } = null!;
+    public string PlaylistName { get; set; }
 
-    public virtual Song Song { get; set; } = null!;
+    public virtual Song? Song { get; set; } 
 
-    public virtual User User { get; set; } = null!;
+    public virtual User User { get; set; }
 }

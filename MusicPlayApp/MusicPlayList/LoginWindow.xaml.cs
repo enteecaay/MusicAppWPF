@@ -3,13 +3,14 @@ using MusicPlayApp.DLL.Repository;
 using System.Windows;
 using MusicPlayApp.DLL;
 using MusicPlayApp.DLL.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace MusicPlayList
 {
     public partial class LoginWindow : Window
     {
         private UserService _userService;
-
+        private PlaylistService _playlistService = new PlaylistService();
         // Constructor for XAML to initialize LoginWindow
         public LoginWindow()
         {
@@ -44,8 +45,9 @@ namespace MusicPlayList
                     MessageBox.Show("Đăng nhập thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
 
                     // Open MainWindow and close LoginWindow
+
+
                     User loggedInUser = _userService.Authenticate(username, password);
-                    Console.WriteLine(loggedInUser);
 
                     MainWindow mainWindow = new MainWindow();
                     mainWindow.CurrentUser = loggedInUser;
@@ -94,7 +96,21 @@ namespace MusicPlayList
 
                 _userService.AddUser(newUser);
                 MessageBox.Show("Đăng ký thành công! Bạn có thể đăng nhập ngay bây giờ.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
-
+                User registerUser = _userService.Authenticate(username, password);
+                Playlist playlist = new Playlist
+                {
+                    UserId = registerUser.UserId,
+                    PlaylistName = $"{username}"
+                };
+                try
+                {
+                    _playlistService.Create(playlist);
+                }
+                catch (DbUpdateException ex)
+                {
+                    var innerException = ex.InnerException?.Message;
+                    MessageBox.Show($"Đã xảy ra lỗi khi tạo playlist: {innerException}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
                 UsernameTextBox.Clear();
                 PasswordBox.Clear();
             }

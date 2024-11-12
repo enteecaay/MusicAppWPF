@@ -20,5 +20,10 @@ namespace MusicPlayApp.BLL.Service
         {
             return await _songRepository.GetSongsByUserIdAsync(userId);
         }
+
+        public void AddSong(Song song)
+        {
+            _songRepository.AddSong(song);
+        }
     }
 }

@@ -206,7 +206,7 @@ namespace MusicPlayList
         {
             if (mediaPlayer != null)
             {
-                mediaPlayer.Volume = volumeSlider.Value / 100; // Chuyển đổi giá trị từ 0-100 về 0-1
+                mediaPlayer.Volume = volumeSlider.Value / 100; 
             }
 
             if (VolumeText != null)

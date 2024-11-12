@@ -27,6 +27,11 @@ namespace MusicPlayApp.DLL.Repository
             _context.SaveChanges();
         }
 
+        public IEnumerable<Song> GetSongsByUserId(int userId)
+        {
+            return _context.Songs.Where(s => s.UserId == userId).ToList();
+        }
+
         // Lấy bài hát theo ID
         public Song GetSongById(int id)
         {

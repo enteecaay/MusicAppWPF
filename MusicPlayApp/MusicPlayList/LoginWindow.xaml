@@ -9,7 +9,7 @@
         <TextBlock Text="Mật khẩu:" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="0,60,0,0"/>
         <PasswordBox x:Name="PasswordBox" Height="30" Width="300" VerticalAlignment="Top" Margin="0,80,0,0"/>
 
-        <Button x:Name="LoginButton" Content="Đăng nhập" Width="120" Height="40" VerticalAlignment="Bottom" HorizontalAlignment="Left" Style="{StaticResource StyledButton}" />
-        <Button x:Name="RegisterButton" Content="Đăng ký" Width="120" Height="40" VerticalAlignment="Bottom" HorizontalAlignment="Right" Style="{StaticResource StyledButton}" />
+        <Button x:Name="LoginButton" Content="Đăng nhập" Width="120" Height="40" VerticalAlignment="Bottom" HorizontalAlignment="Left" Style="{StaticResource StyledButton}" Click="LoginButton_Click" />
+        <Button x:Name="RegisterButton" Content="Đăng ký" Width="120" Height="40" VerticalAlignment="Bottom" HorizontalAlignment="Right" Style="{StaticResource StyledButton}" Click="RegisterButton_Click" />
     </Grid>
 </Window>

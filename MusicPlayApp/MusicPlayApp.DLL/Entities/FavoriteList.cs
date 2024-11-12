@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace MusicPlayApp.DLL.Model;
+namespace MusicPlayApp.DLL.Entities;
 
-public partial class FavoriteMusic
+public partial class FavoriteList
 {
-    public int Id { get; set; }
+    public int FavoriteListId { get; set; }
 
     public int UserId { get; set; }
 
     public int SongId { get; set; }
+
+    public string ListName { get; set; } = null!;
 
     public virtual Song Song { get; set; } = null!;
 

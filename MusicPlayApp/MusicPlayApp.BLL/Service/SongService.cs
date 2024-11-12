@@ -25,5 +25,10 @@ namespace MusicPlayApp.BLL.Service
         {
             _songRepository.AddSong(song);
         }
+
+        public void RemoveSong(Song song)
+        {
+            _songRepository.Remove(song);
+        }
     }
 }

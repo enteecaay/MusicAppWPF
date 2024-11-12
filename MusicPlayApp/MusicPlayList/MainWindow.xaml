@@ -4,8 +4,8 @@
         xmlns:av="http://schemas.microsoft.com/expression/blend/2008" 
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
         mc:Ignorable="av" x:Class="MusicPlayList.MainWindow"
-        Title="Music/Video Player" Height="500" Width="900" WindowStartupLocation="CenterScreen"
-        Background="#333333">
+        Title="Music/Video Player" Height="550" Width="900" WindowStartupLocation="CenterScreen"
+        Background="#333333" ResizeMode="NoResize">
     <Grid Margin="10">
 
         <!-- Media Element to play audio/video -->
@@ -27,7 +27,7 @@
          ItemsSource="{Binding Playlists}"
          SelectedItem="{Binding SelectedPlaylist, Mode=TwoWay}"
          Background="#444444" Foreground="White" 
-         FontFamily="Segoe UI" FontSize="12" Loaded="playlistListBox_Loaded" />
+         FontFamily="Segoe UI" FontSize="12" />
 
         <!-- Favorite ListBox -->
         <ListBox x:Name="FavoriteListBox" Width="220" Height="270" 
@@ -56,6 +56,7 @@
             <Button Content="Previous" Width="70" Click="Button_Click_1" Style="{StaticResource StyledButton}"/>
             <Button Content="Play" Width="70" Margin="10,0" Click="PlayButton_Click" Background="#4CAF50" Foreground="White" FontFamily="Segoe UI"/>
             <Button Content="Pause" Width="70" Margin="10,0" Click="PauseButton_Click" Background="#FFA726" Foreground="White" FontFamily="Segoe UI"/>
+            <Button Content="Resume" Width="70" Margin="10,0" Click="ResumeButton_Click" Background="#4CAF50" Foreground="White" FontFamily="Segoe UI"/>
             <Button Content="Stop" Width="70" Margin="10,0" Click="StopButton_Click" Background="#F44336" Foreground="White" FontFamily="Segoe UI"/>
             <Button Content="Next" Width="70" Click="Button_Click" Style="{StaticResource StyledButton}"/>
         </StackPanel>
@@ -103,7 +104,7 @@
          Foreground="White" FontFamily="Segoe UI" FontSize="12"
          HorizontalAlignment="Center" 
          TextAlignment="Center" IsReadOnly="True"
-         Text="{Binding CurrentSongInfo}"/>
+         />
         <Image x:Name="CDImage" HorizontalAlignment="Center" Height="202" Margin="0,40,0,0" VerticalAlignment="Top" Width="203">
             <Image.Source>
                 <BitmapImage UriSource="Storage/CDImage.png"/>

@@ -48,6 +48,13 @@ namespace MusicPlayApp.DLL.Repository
             _context.SaveChanges();
         }
 
+        public void Remove(Song song)
+        {
+            _context = new();
+            _context.Songs.Remove(song);
+            _context.SaveChanges();
+        }
+
 
 
     }

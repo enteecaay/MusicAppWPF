@@ -25,12 +25,13 @@ namespace MusicPlayList
     {
 
         private DispatcherTimer timer;
-        private List<string> playlist = new List<string>();
+        private List<Song> playlist = new List<Song>();
         private bool isShuffle = false;
         private string[] files;
         private string[] paths;
 
         private SongService _songService = new SongService();
+
 
         public MusicPlayApp.DLL.Entities.User CurrentUser { get; set; }
 
@@ -40,9 +41,7 @@ namespace MusicPlayList
             InitializePlayer();
             volumeSlider.Value = 100;
             VolumeText.Text = "100%";
-            //LoadUserSongs();
             LoadTitleAllSongs();
-
         }
 
         private void InitializePlayer()
@@ -75,20 +74,43 @@ namespace MusicPlayList
         }
 
 
-        private void PlaylistListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            txtText.Text = playlistListBox.SelectedItem.ToString();
-            mediaPlayer.Source = new Uri(paths[playlistListBox.SelectedIndex]);
-            mediaPlayer.Play();
-            timer.Start();
 
-        }
 
         private void PlayButton_Click(object sender, RoutedEventArgs e)
         {
-            mediaPlayer.Play();
-            timer.Start();
+            if (playlistListBox.SelectedItem != null)
+            {
+                var selectedTitle = playlistListBox.SelectedItem.ToString();
+                var selectedSong = playlist.FirstOrDefault(s => s.Title == selectedTitle);
+
+                if (selectedSong != null)
+                {
+                    var filePath = selectedSong.Album;
+
+                    // Check if the file exists
+                    if (File.Exists(filePath))
+                    {
+                        mediaPlayer.Source = new Uri(filePath);
+                        mediaPlayer.Play();
+                        timer.Start();
+                    }
+                    else
+                    {
+                        MessageBox.Show($"File not found: {filePath}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Selected song not found in the playlist.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Please select a song from the playlist.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
         }
+
+
 
         private void PauseButton_Click(object sender, RoutedEventArgs e)
         {
@@ -195,10 +217,28 @@ namespace MusicPlayList
 
         private void DeleteBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (FavoriteListBox.SelectedItem != null)
+            if (playlistListBox.SelectedItem != null)
             {
-                FavoriteListBox.Items.Remove(FavoriteListBox.SelectedItem);
+                var selectedTitle = playlistListBox.SelectedItem.ToString();
+                var selectedSong = playlist.FirstOrDefault(s => s.Title == selectedTitle);
+
+                if (selectedSong != null)
+                {
+                    _songService.RemoveSong(selectedSong);
+                    
+                    MessageBox.Show($"Deleted song: {selectedTitle}", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    MessageBox.Show("Selected song not found in the playlist.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
+            else
+            {
+                MessageBox.Show("Please select a song from the playlist.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            playlistListBox.ItemsSource = null;
+            LoadTitleAllSongs();
         }
 
         private void Addbtn_Click(object sender, RoutedEventArgs e)
@@ -208,36 +248,63 @@ namespace MusicPlayList
 
         private void playlistListBox_Loaded(object sender, RoutedEventArgs e)
         {
+            
 
         }
 
-        public async void LoadUserSongs()
-        {
-            var songs = await _songService.GetSongsByUserIdAsync(CurrentUser.UserId);
-            foreach (var song in songs)
-            {
-                playlist.Add(song.Title);
-                playlistListBox.Items.Add(song.Title);
-            }
-            if(songs == null)
-            {
-                return;
-            }
-        }
+        //public async void LoadUserSongs()
+        //{
+        //    var playlist = await _songService.GetSongsByUserIdAsync(CurrentUser.UserId);
+        //    foreach (var song in songs)
+        //    {
+        //        playlist.Add(song.Title);
+        //        playlistListBox.Items.Add(song.Title);
+        //    }
+        //    if(songs == null)
+        //    {
+        //        return;
+        //    }
+        //}
 
         public async void LoadTitleAllSongs()
         {
-            var songs = await _songService.GetAllSongsAsync();
-            foreach (var song in songs)
+            playlist = await _songService.GetAllSongsAsync();
+            playlistListBox.Items.Clear();
+            foreach (var song in playlist)
             {
-                playlist.Add(song.Title);
                 playlistListBox.Items.Add(song.Title);
             }
-            if (songs == null)
+        }
+        private void PlaylistListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (playlistListBox.SelectedItem != null)
             {
-                return;
-            }
+                var selectedTitle = playlistListBox.SelectedItem.ToString();
+                var selectedSong = playlist.FirstOrDefault(s => s.Title == selectedTitle);
+                if (selectedSong != null)
+                {
+                    var album = selectedSong.Album;
+                    txtText.Text = selectedSong.Title;
 
+                    // Check if the file exists
+                    if (File.Exists(album))
+                    {
+                        mediaPlayer.Source = new Uri(album);
+                        mediaPlayer.Play();
+                        timer.Start();
+                    }
+                    else
+                    {
+                        MessageBox.Show($"File not found: {album}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+            }
+        }
+
+        private void ResumeButton_Click(object sender, RoutedEventArgs e)
+        {
+            mediaPlayer.Play();
+            timer.Start();
         }
     }
 }

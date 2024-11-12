@@ -51,7 +51,7 @@ namespace MusicPlayList
 
                     MainWindow mainWindow = new MainWindow();
                     mainWindow.CurrentUser = loggedInUser;
-                    mainWindow.LoadUserSongs();
+                    //mainWindow.LoadUserSongs();
                     mainWindow.Show();
                     
                     this.Close();

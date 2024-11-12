@@ -206,7 +206,7 @@ namespace MusicPlayList
         {
             if (mediaPlayer != null)
             {
-                mediaPlayer.Volume = volumeSlider.Value / 100; 
+                mediaPlayer.Volume = volumeSlider.Value / 100;
             }
 
             if (VolumeText != null)
@@ -291,7 +291,7 @@ namespace MusicPlayList
             FavoriteListBox.Items.Clear();
 
         }
-
+        //abcd
         private void LoadBtn_Click(object sender, RoutedEventArgs e)
         {
             using (StreamReader read = new StreamReader(@"D:\data\PRN212\MusicPlayApp\MusicPlayList\Storage\Favorite.txt"))

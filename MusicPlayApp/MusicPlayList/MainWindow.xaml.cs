@@ -35,6 +35,7 @@ namespace MusicPlayList
             InitializeComponent();
             timer = new DispatcherTimer();
 
+
             // Configure services
             var serviceCollection = new ServiceCollection();
             ConfigureServices(serviceCollection);
@@ -76,11 +77,58 @@ namespace MusicPlayList
                     playlistListBox.Items.Add(playlist.Name);
                 }
 
+<<<<<<< HEAD
                 var favoriteSongs = _favoriteMusicService.GetFavoriteSongsByUserId(user.Id);
                 foreach (var song in favoriteSongs)
                 {
                     FavoriteListBox.Items.Add(song.Title);
                 }
+=======
+        private void InitializePlayer()
+        {
+            mediaPlayer.Volume = volumeSlider.Value;
+            timer = new DispatcherTimer();
+            timer.Interval = TimeSpan.FromSeconds(1);
+            timer.Tick += Timer_Tick;
+            CDImage.Visibility = Visibility.Hidden;
+        }
+
+        private void Timer_Tick(object sender, EventArgs e)
+        {
+            if (mediaPlayer.NaturalDuration.HasTimeSpan)
+            {
+                TimeCount.Maximum = mediaPlayer.NaturalDuration.TimeSpan.TotalSeconds;
+                TimeCount.Value = mediaPlayer.Position.TotalSeconds;
+
+                currentTimeText.Text = mediaPlayer.Position.ToString(@"mm\:ss");
+                totalTimeText.Text = mediaPlayer.NaturalDuration.TimeSpan.ToString(@"mm\:ss");
+            }
+
+        }
+
+        private void ImportButton_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                Multiselect = true,
+                Filter = "Audio Files|*.mp3;*.mp4;*.wav;*.wma|All Files|*.*" // Bộ lọc file
+            };
+
+            // Chỉ thực hiện import nếu người dùng nhấn "OK"
+            if (openFileDialog.ShowDialog() != true)
+            {
+                return; // Người dùng nhấn Cancel, không làm gì cả
+            }
+
+            // Lấy danh sách file và đường dẫn
+            files = openFileDialog.FileNames;
+            paths = openFileDialog.FileNames;
+
+            // Thêm từng file vào playlistListBox
+            foreach (var file in files)
+            {
+                playlistListBox.Items.Add(file);
+>>>>>>> 3f65d43207fc17af8bb5f4943bece6e7cc757f61
             }
         }
 
@@ -92,6 +140,7 @@ namespace MusicPlayList
 
         private void PlaylistListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+<<<<<<< HEAD
             if (playlistListBox.SelectedItem != null)
             {
                 txtText.Text = playlistListBox.SelectedItem.ToString();
@@ -99,17 +148,41 @@ namespace MusicPlayList
                 mediaPlayer.Play();
                 timer.Start();
             }
+=======
+            txtText.Text = playlistListBox.SelectedItem.ToString();
+            mediaPlayer.Source = new Uri(paths[playlistListBox.SelectedIndex]);
+            string selectedPath = paths[playlistListBox.SelectedIndex];
+            string fileExtension = System.IO.Path.GetExtension(selectedPath).ToLower();
+            bool isMusic = fileExtension == ".mp3" || fileExtension == ".wav";
+            if (isMusic)
+            {
+                CDImage.Visibility = Visibility.Visible;
+                StartRotatingDisk();
+            }
+            else
+            {
+                CDImage.Visibility = Visibility.Hidden;
+            }
+            mediaPlayer.Play();
+            timer.Start();
+
+>>>>>>> 3f65d43207fc17af8bb5f4943bece6e7cc757f61
         }
 
         private void PlayButton_Click(object sender, RoutedEventArgs e)
         {
             mediaPlayer.Play();
+            StartRotatingDisk();
             timer.Start();
         }
 
         private void PauseButton_Click(object sender, RoutedEventArgs e)
         {
             mediaPlayer.Pause();
+            if (timer != null)
+            {
+                timer.Stop();
+            }
         }
 
         private void StopButton_Click(object sender, RoutedEventArgs e)
@@ -159,6 +232,10 @@ namespace MusicPlayList
                     playlistListBox.SelectedIndex++;
                 else
                     playlistListBox.SelectedIndex = 0;
+            }
+            if (timer != null)
+            {
+                timer.Stop();
             }
         }
 
@@ -216,6 +293,40 @@ namespace MusicPlayList
             }
         }
 
+<<<<<<< HEAD
+=======
+        private void FavoriteListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (FavoriteListBox.SelectedItem != null)
+            {
+                txtText.Text = FavoriteListBox.SelectedItem.ToString();
+                mediaPlayer.Source = new Uri(txtText.Text);
+                string selectedPath = paths[playlistListBox.SelectedIndex];
+                string fileExtension = System.IO.Path.GetExtension(selectedPath).ToLower();
+                bool isMusic = fileExtension == ".mp3" || fileExtension == ".wav";
+                if (isMusic)
+                {
+                    CDImage.Visibility = Visibility.Visible;
+                    StartRotatingDisk();
+                }
+                else
+                {
+                    CDImage.Visibility = Visibility.Hidden;
+                }
+                mediaPlayer.Play();
+                timer.Start();
+            }
+        }
+
+        private void DeleteBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (FavoriteListBox.SelectedItem != null)
+            {
+                FavoriteListBox.Items.Remove(FavoriteListBox.SelectedItem);
+            }
+        }
+
+>>>>>>> 3f65d43207fc17af8bb5f4943bece6e7cc757f61
         private void Addbtn_Click(object sender, RoutedEventArgs e)
         {
             if (playlistListBox.SelectedItem != null)
@@ -243,6 +354,7 @@ namespace MusicPlayList
             }
         }
 
+<<<<<<< HEAD
         private void DeleteBtn_Click(object sender, RoutedEventArgs e)
         {
             if (FavoriteListBox.SelectedItem != null)
@@ -270,6 +382,22 @@ namespace MusicPlayList
                 FavoriteListBox.Items.Add(song.Title);
             }
             MessageBox.Show("Danh sách yêu thích đã được tải từ cơ sở dữ liệu.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+=======
+        private void StartRotatingDisk()
+        {
+            if (timer == null)
+                return;
+
+            timer.Interval = TimeSpan.FromMilliseconds(20); 
+            timer.Tick += (s, e) =>
+            {
+                rotateTransform.Angle += 1;
+                if (rotateTransform.Angle >= 360)
+                {
+                    rotateTransform.Angle = 0;
+                }
+            };
+>>>>>>> 3f65d43207fc17af8bb5f4943bece6e7cc757f61
         }
     }
 }

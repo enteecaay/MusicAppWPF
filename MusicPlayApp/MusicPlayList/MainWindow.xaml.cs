@@ -1,27 +1,35 @@
 ﻿using Microsoft.Win32;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
 using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.EntityFrameworkCore;
 using MusicPlayApp.BLL.Service;
 using MusicPlayApp.DLL.Repository;
 using MusicPlayApp.DLL.Model;
+using System.Collections.Generic;
+using MusicPlayApp.BLL.Service;
+using Microsoft.EntityFrameworkCore;
 using MusicPlayApp.DLL;
+
 
 namespace MusicPlayList
 {
+    /// <summary>
+    /// Interaction logic for MainWindow.xaml
+    /// </summary>
     public partial class MainWindow : Window
     {
         private UserService _userService;
         private SongService _songService;
-        private PlayListService _playListService;
-        private FavoriteMusicService _favoriteMusicService;
         private ServiceProvider _serviceProvider;
 
         private DispatcherTimer timer;
@@ -29,6 +37,7 @@ namespace MusicPlayList
         private bool isShuffle = false;
         private string[] files;
         private string[] paths;
+
 
         public MainWindow()
         {
@@ -44,8 +53,6 @@ namespace MusicPlayList
             // Initialize services
             _userService = _serviceProvider.GetRequiredService<UserService>();
             _songService = _serviceProvider.GetRequiredService<SongService>();
-            _playListService = _serviceProvider.GetRequiredService<PlayListService>();
-            _favoriteMusicService = _serviceProvider.GetRequiredService<FavoriteMusicService>();
 
             // Load user data
             LoadUserData();
@@ -60,10 +67,8 @@ namespace MusicPlayList
             services.AddScoped<UserService>();
             services.AddScoped<SongRepo>();
             services.AddScoped<SongService>();
-            services.AddScoped<PlayListRepo>();
-            services.AddScoped<PlayListService>();
-            services.AddScoped<FavoriteMusicsRepo>();
-            services.AddScoped<FavoriteMusicService>();
+
+            // Register other services
         }
 
         private void LoadUserData()
@@ -71,19 +76,31 @@ namespace MusicPlayList
             var user = _userService.GetUserByUsername("exampleUser");
             if (user != null)
             {
-                var playlists = _playListService.GetPlaylistsByUserId(user.Id);
-                foreach (var playlist in playlists)
-                {
-                    playlistListBox.Items.Add(playlist.Name);
-                }
+                var playlists = user.Playlists.ToList();
+                var favoriteMusics = user.FavoriteMusics.ToList();
+                // Bind playlists and favorite musics to UI
+            }
+        }
 
-<<<<<<< HEAD
-                var favoriteSongs = _favoriteMusicService.GetFavoriteSongsByUserId(user.Id);
-                foreach (var song in favoriteSongs)
+        private void AddUser(User user)
+        {
+            _userService.AddUser(user);
+        }
+
+        private void AddSongToPlaylist(int userId, Song song)
+        {
+            var user = _userService.GetUserById(userId);
+            if (user != null)
+            {
+                var playlist = user.Playlists.FirstOrDefault();
+                if (playlist != null)
                 {
-                    FavoriteListBox.Items.Add(song.Title);
+                    playlist.Songs.Add(song);
+                    _songService.AddSong(song);
                 }
-=======
+            }
+        }
+
         private void InitializePlayer()
         {
             mediaPlayer.Volume = volumeSlider.Value;
@@ -128,7 +145,6 @@ namespace MusicPlayList
             foreach (var file in files)
             {
                 playlistListBox.Items.Add(file);
->>>>>>> 3f65d43207fc17af8bb5f4943bece6e7cc757f61
             }
         }
 
@@ -140,15 +156,6 @@ namespace MusicPlayList
 
         private void PlaylistListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-<<<<<<< HEAD
-            if (playlistListBox.SelectedItem != null)
-            {
-                txtText.Text = playlistListBox.SelectedItem.ToString();
-                mediaPlayer.Source = new Uri(paths[playlistListBox.SelectedIndex]);
-                mediaPlayer.Play();
-                timer.Start();
-            }
-=======
             txtText.Text = playlistListBox.SelectedItem.ToString();
             mediaPlayer.Source = new Uri(paths[playlistListBox.SelectedIndex]);
             string selectedPath = paths[playlistListBox.SelectedIndex];
@@ -166,7 +173,6 @@ namespace MusicPlayList
             mediaPlayer.Play();
             timer.Start();
 
->>>>>>> 3f65d43207fc17af8bb5f4943bece6e7cc757f61
         }
 
         private void PlayButton_Click(object sender, RoutedEventArgs e)
@@ -200,7 +206,7 @@ namespace MusicPlayList
         {
             if (mediaPlayer != null)
             {
-                mediaPlayer.Volume = volumeSlider.Value / 100;
+                mediaPlayer.Volume = volumeSlider.Value / 100; // Chuyển đổi giá trị từ 0-100 về 0-1
             }
 
             if (VolumeText != null)
@@ -208,6 +214,7 @@ namespace MusicPlayList
                 VolumeText.Text = $"{volumeSlider.Value:0}%";
             }
         }
+
 
         private void ShuffleButton_Click(object sender, RoutedEventArgs e)
         {
@@ -264,37 +271,42 @@ namespace MusicPlayList
             mediaPlayer.Position = TimeSpan.FromSeconds(newTime);
         }
 
-        private void ImportButton_Click(object sender, RoutedEventArgs e)
+        private void SaveBtn_Click(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog
+            if (FavoriteListBox.Items.Count == 0)
             {
-                Multiselect = true,
-                Filter = "Audio Files|*.mp3;*.mp4;*.wav;*.wma|All Files|*.*"
-            };
+                MessageBox.Show("Danh sách yêu thích trống, không có gì để lưu.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
 
-            if (openFileDialog.ShowDialog() == true)
+            using (StreamWriter save = new StreamWriter(@"D:\data\PRN212\MusicPlayApp\MusicPlayList\Storage\Favorite.txt"))
             {
-                files = openFileDialog.FileNames;
-                paths = openFileDialog.FileNames;
-
-                foreach (var file in files)
+                foreach (var item in FavoriteListBox.Items)
                 {
-                    var song = new Song
-                    {
-                        Title = Path.GetFileNameWithoutExtension(file),
-                        Url = file,
-                        Artist = "Unknown", // Giả định nghệ sĩ nếu không có thông tin
-                        Album = "Unknown"
-                    };
+                    save.WriteLine(item.ToString());
+                }
+            }
 
-                    _songService.AddSong(song); // Lưu vào cơ sở dữ liệu
-                    playlistListBox.Items.Add(song.Title);
+            MessageBox.Show("Đã lưu danh sách yêu thích thành công.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+            FavoriteListBox.Items.Clear();
+
+        }
+
+        private void LoadBtn_Click(object sender, RoutedEventArgs e)
+        {
+            using (StreamReader read = new StreamReader(@"D:\data\PRN212\MusicPlayApp\MusicPlayList\Storage\Favorite.txt"))
+            {
+                string line;
+                while ((line = read.ReadLine()) != null)
+                {
+                    if (!string.IsNullOrWhiteSpace(line))
+                    {
+                        FavoriteListBox.Items.Add(line);
+                    }
                 }
             }
         }
 
-<<<<<<< HEAD
-=======
         private void FavoriteListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (FavoriteListBox.SelectedItem != null)
@@ -326,26 +338,20 @@ namespace MusicPlayList
             }
         }
 
->>>>>>> 3f65d43207fc17af8bb5f4943bece6e7cc757f61
         private void Addbtn_Click(object sender, RoutedEventArgs e)
         {
             if (playlistListBox.SelectedItem != null)
             {
                 string selectedSong = playlistListBox.SelectedItem.ToString();
-                var song = _songService.GetAllSongs().FirstOrDefault(s => s.Title == selectedSong);
 
-                if (song != null)
+                if (!FavoriteListBox.Items.Contains(selectedSong))
                 {
-                    var user = _userService.GetUserByUsername("exampleUser");
-                    if (!_favoriteMusicService.IsFavorite(user.Id, song.Id))
-                    {
-                        _favoriteMusicService.AddToFavorite(user.Id, song.Id);
-                        FavoriteListBox.Items.Add(selectedSong);
-                    }
-                    else
-                    {
-                        MessageBox.Show("Bài hát đã có trong danh sách yêu thích.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
-                    }
+                    FavoriteListBox.Items.Add(selectedSong);
+                    Addbtn.IsEnabled = true;
+                }
+                else
+                {
+                    MessageBox.Show("Bài hát đã có trong danh sách yêu thích.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
             else
@@ -354,41 +360,12 @@ namespace MusicPlayList
             }
         }
 
-<<<<<<< HEAD
-        private void DeleteBtn_Click(object sender, RoutedEventArgs e)
-        {
-            if (FavoriteListBox.SelectedItem != null)
-            {
-                string selectedSong = FavoriteListBox.SelectedItem.ToString();
-                var song = _songService.GetAllSongs().FirstOrDefault(s => s.Title == selectedSong);
-                var user = _userService.GetUserByUsername("exampleUser");
-
-                if (song != null)
-                {
-                    _favoriteMusicService.RemoveFromFavorite(user.Id, song.Id);
-                    FavoriteListBox.Items.Remove(FavoriteListBox.SelectedItem);
-                }
-            }
-        }
-
-        private void LoadBtn_Click(object sender, RoutedEventArgs e)
-        {
-            FavoriteListBox.Items.Clear();
-            var user = _userService.GetUserByUsername("exampleUser");
-            var favoriteSongs = _favoriteMusicService.GetFavoriteSongsByUserId(user.Id);
-
-            foreach (var song in favoriteSongs)
-            {
-                FavoriteListBox.Items.Add(song.Title);
-            }
-            MessageBox.Show("Danh sách yêu thích đã được tải từ cơ sở dữ liệu.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
-=======
         private void StartRotatingDisk()
         {
             if (timer == null)
                 return;
 
-            timer.Interval = TimeSpan.FromMilliseconds(20); 
+            timer.Interval = TimeSpan.FromMilliseconds(20);
             timer.Tick += (s, e) =>
             {
                 rotateTransform.Angle += 1;
@@ -397,7 +374,6 @@ namespace MusicPlayList
                     rotateTransform.Angle = 0;
                 }
             };
->>>>>>> 3f65d43207fc17af8bb5f4943bece6e7cc757f61
         }
     }
 }

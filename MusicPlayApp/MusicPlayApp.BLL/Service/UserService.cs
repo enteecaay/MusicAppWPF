@@ -1,30 +1,44 @@
 ﻿using MusicPlayApp.DLL.Model;
 using MusicPlayApp.DLL.Repository;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MusicPlayApp.BLL.Service
 {
     public class UserService
     {
-        private UserRepo _userrepo = new UserRepo();
+        private readonly UserRepo _userRepo;
 
-        public User getUserById(int id)
+        // Inject UserRepo thông qua constructor
+        public UserService(UserRepo userRepo)
         {
-            return _userrepo.GetUserById(id);
+            _userRepo = userRepo ?? throw new ArgumentNullException(nameof(userRepo));
         }
 
+        // Lấy người dùng bằng Id
+        public User GetUserById(int id)
+        {
+            return _userRepo.GetUserById(id);
+        }
+
+        // Lấy người dùng bằng Username
         public User GetUserByUsername(string username)
         {
-            return _userrepo.GetUserByUsername(username);
+            return _userRepo.GetUserByUsername(username);
         }
 
+        // Thêm người dùng mới
         public void AddUser(User user)
         {
-            _userrepo.AddUser(user);
+            if (user == null)
+                throw new ArgumentNullException(nameof(user), "User cannot be null.");
+
+            _userRepo.AddUser(user);
+        }
+
+        // Kiểm tra thông tin đăng nhập
+        public bool ValidateUser(string username, string password)
+        {
+            return _userRepo.ValidateUser(username, password);
         }
     }
 }

@@ -45,6 +45,7 @@ namespace MusicPlayList
             timer = new DispatcherTimer();
 
 
+
             // Configure services
             var serviceCollection = new ServiceCollection();
             ConfigureServices(serviceCollection);
@@ -89,7 +90,7 @@ namespace MusicPlayList
 
         private void AddSongToPlaylist(int userId, Song song)
         {
-            var user = _userService.getUserById(userId);
+            var user = _userService.GetUserById(userId);
             if (user != null)
             {
                 var playlist = user.Playlists.FirstOrDefault();
@@ -107,6 +108,7 @@ namespace MusicPlayList
             timer = new DispatcherTimer();
             timer.Interval = TimeSpan.FromSeconds(1);
             timer.Tick += Timer_Tick;
+            CDImage.Visibility = Visibility.Hidden;
             CDImage.Visibility = Visibility.Hidden;
         }
 
@@ -170,6 +172,18 @@ namespace MusicPlayList
             {
                 CDImage.Visibility = Visibility.Hidden;
             }
+            string selectedPath = paths[playlistListBox.SelectedIndex];
+            string fileExtension = System.IO.Path.GetExtension(selectedPath).ToLower();
+            bool isMusic = fileExtension == ".mp3" || fileExtension == ".wav";
+            if (isMusic)
+            {
+                CDImage.Visibility = Visibility.Visible;
+                StartRotatingDisk();
+            }
+            else
+            {
+                CDImage.Visibility = Visibility.Hidden;
+            }
             mediaPlayer.Play();
             timer.Start();
 
@@ -179,12 +193,17 @@ namespace MusicPlayList
         {
             mediaPlayer.Play();
             StartRotatingDisk();
+            StartRotatingDisk();
             timer.Start();
         }
 
         private void PauseButton_Click(object sender, RoutedEventArgs e)
         {
             mediaPlayer.Pause();
+            if (timer != null)
+            {
+                timer.Stop();
+            }
             if (timer != null)
             {
                 timer.Stop();
@@ -206,7 +225,7 @@ namespace MusicPlayList
         {
             if (mediaPlayer != null)
             {
-                mediaPlayer.Volume = volumeSlider.Value / 100; // Chuyển đổi giá trị từ 0-100 về 0-1
+                mediaPlayer.Volume = volumeSlider.Value / 100;
             }
 
             if (VolumeText != null)
@@ -239,6 +258,10 @@ namespace MusicPlayList
                     playlistListBox.SelectedIndex++;
                 else
                     playlistListBox.SelectedIndex = 0;
+            }
+            if (timer != null)
+            {
+                timer.Stop();
             }
             if (timer != null)
             {
@@ -289,9 +312,9 @@ namespace MusicPlayList
 
             MessageBox.Show("Đã lưu danh sách yêu thích thành công.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
             FavoriteListBox.Items.Clear();
-           
-        }
 
+        }
+        //abcd
         private void LoadBtn_Click(object sender, RoutedEventArgs e)
         {
             using (StreamReader read = new StreamReader(@"D:\data\PRN212\MusicPlayApp\MusicPlayList\Storage\Favorite.txt"))
@@ -313,6 +336,18 @@ namespace MusicPlayList
             {
                 txtText.Text = FavoriteListBox.SelectedItem.ToString();
                 mediaPlayer.Source = new Uri(txtText.Text);
+                string selectedPath = paths[playlistListBox.SelectedIndex];
+                string fileExtension = System.IO.Path.GetExtension(selectedPath).ToLower();
+                bool isMusic = fileExtension == ".mp3" || fileExtension == ".wav";
+                if (isMusic)
+                {
+                    CDImage.Visibility = Visibility.Visible;
+                    StartRotatingDisk();
+                }
+                else
+                {
+                    CDImage.Visibility = Visibility.Hidden;
+                }
                 string selectedPath = paths[playlistListBox.SelectedIndex];
                 string fileExtension = System.IO.Path.GetExtension(selectedPath).ToLower();
                 bool isMusic = fileExtension == ".mp3" || fileExtension == ".wav";

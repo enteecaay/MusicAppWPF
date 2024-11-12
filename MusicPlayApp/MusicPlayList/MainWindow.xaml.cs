@@ -40,7 +40,7 @@ namespace MusicPlayList
             InitializePlayer();
             volumeSlider.Value = 100;
             VolumeText.Text = "100%";
-            LoadUserSongs();
+            //LoadUserSongs();
 
         }
 
@@ -207,13 +207,17 @@ namespace MusicPlayList
 
         }
 
-        private async void LoadUserSongs()
+        public async void LoadUserSongs()
         {
             var songs = await _songService.GetSongsByUserIdAsync(CurrentUser.UserId);
             foreach (var song in songs)
             {
                 playlist.Add(song.Title);
                 playlistListBox.Items.Add(song.Title);
+            }
+            if(songs == null)
+            {
+                return;
             }
         }
     }

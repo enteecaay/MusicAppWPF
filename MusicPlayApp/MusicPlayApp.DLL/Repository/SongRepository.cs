@@ -21,7 +21,7 @@ namespace MusicPlayApp.DLL.Repository
                 .ToListAsync();
         }
 
-        public async Task<List<Song>> GetSongsByUserIdAsync(int userId)
+        public async Task<List<Song>>? GetSongsByUserIdAsync(int userId)
         {
             return await _context.Songs
                 .Include(s => s.FavoriteLists)
@@ -29,6 +29,7 @@ namespace MusicPlayApp.DLL.Repository
                 .ThenInclude(p => p.User)
                 .Where(s => s.Playlists.Any(p => p.UserId == userId))
                 .ToListAsync();
+
         }
 
 

@@ -2,6 +2,7 @@
 using MusicPlayApp.DLL.Repository;
 using System.Windows;
 using MusicPlayApp.DLL;
+using MusicPlayApp.DLL.Entities;
 
 namespace MusicPlayList
 {
@@ -43,8 +44,14 @@ namespace MusicPlayList
                     MessageBox.Show("Đăng nhập thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
 
                     // Open MainWindow and close LoginWindow
+                    User loggedInUser = _userService.Authenticate(username, password);
+                    Console.WriteLine(loggedInUser);
+
                     MainWindow mainWindow = new MainWindow();
+                    mainWindow.CurrentUser = loggedInUser;
+                    mainWindow.LoadUserSongs();
                     mainWindow.Show();
+                    
                     this.Close();
                 }
                 else
@@ -56,6 +63,7 @@ namespace MusicPlayList
             {
                 MessageBox.Show($"Đã xảy ra lỗi khi đăng nhập: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+
         }
 
         private void RegisterButton_Click(object sender, RoutedEventArgs e)

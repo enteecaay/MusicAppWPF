@@ -65,5 +65,10 @@ namespace MusicPlayApp.DLL.Repository
             var user = _context.Users.FirstOrDefault(u => u.UserName == username && u.Password == password);
             return user != null;
         }
+
+        public User Authenticate(string username, string password)
+        {
+            return _context.Users.FirstOrDefault(u => u.UserName == username && u.Password == password);
+        }
     }
 }

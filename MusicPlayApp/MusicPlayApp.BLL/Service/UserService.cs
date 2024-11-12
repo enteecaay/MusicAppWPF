@@ -41,5 +41,10 @@ namespace MusicPlayApp.BLL.Service
         {
             return _userRepo.ValidateUser(username, password);
         }
+
+        public User Authenticate(string username, string password)
+        {
+            return _userRepo.Authenticate(username, password);
+        }
     }
 }

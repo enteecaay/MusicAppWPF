@@ -104,5 +104,13 @@
          HorizontalAlignment="Center" 
          TextAlignment="Center" IsReadOnly="True"
          Text="{Binding CurrentSongInfo}"/>
+        <Image x:Name="CDImage" HorizontalAlignment="Center" Height="202" Margin="0,40,0,0" VerticalAlignment="Top" Width="203">
+            <Image.Source>
+                <BitmapImage UriSource="Storage/CDImage.png"/>
+            </Image.Source>
+            <Image.RenderTransform>
+                <RotateTransform x:Name="rotateTransform" Angle="0" CenterX="100" CenterY="100" />
+            </Image.RenderTransform>
+        </Image>
     </Grid>
 </Window>

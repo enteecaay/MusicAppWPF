@@ -50,6 +50,7 @@ namespace MusicPlayList
             timer = new DispatcherTimer();
             timer.Interval = TimeSpan.FromSeconds(1);
             timer.Tick += Timer_Tick;
+            CDImage.Visibility = Visibility.Hidden;
         }
 
         private void Timer_Tick(object sender, EventArgs e)
@@ -91,6 +92,17 @@ namespace MusicPlayList
                     if (File.Exists(filePath))
                     {
                         mediaPlayer.Source = new Uri(filePath);
+                        string fileExtension = System.IO.Path.GetExtension(filePath).ToLower();
+                        bool isMusic = fileExtension == ".mp3" || fileExtension == ".wav";
+                        if (isMusic)
+                        {
+                            CDImage.Visibility = Visibility.Visible;
+                            StartRotatingDisk();
+                        }
+                        else
+                        {
+                            CDImage.Visibility = Visibility.Hidden;
+                        }
                         mediaPlayer.Play();
                         timer.Start();
                     }
@@ -115,6 +127,10 @@ namespace MusicPlayList
         private void PauseButton_Click(object sender, RoutedEventArgs e)
         {
             mediaPlayer.Pause();
+            if (timer != null)
+            {
+                timer.Stop();
+            }
         }
 
         private void StopButton_Click(object sender, RoutedEventArgs e)
@@ -214,6 +230,17 @@ namespace MusicPlayList
             {
                 txtText.Text = FavoriteListBox.SelectedItem.ToString();
                 mediaPlayer.Source = new Uri(txtText.Text);
+                string fileExtension = System.IO.Path.GetExtension(txtText.Text).ToLower();
+                bool isMusic = fileExtension == ".mp3" || fileExtension == ".wav";
+                if (isMusic)
+                {
+                    CDImage.Visibility = Visibility.Visible;
+                    StartRotatingDisk();
+                }
+                else
+                {
+                    CDImage.Visibility = Visibility.Hidden;
+                }
                 mediaPlayer.Play();
                 timer.Start();
             }
@@ -295,7 +322,21 @@ namespace MusicPlayList
                     // Check if the file exists
                     if (File.Exists(album))
                     {
+                        
                         mediaPlayer.Source = new Uri(album);
+                        string selectedPath = album;
+                        string fileExtension = System.IO.Path.GetExtension(selectedPath).ToLower();
+                        bool isMusic = fileExtension == ".mp3" || fileExtension == ".wav";
+                        if (isMusic)
+                        {
+                            CDImage.Visibility = Visibility.Visible;
+                            StartRotatingDisk();
+                        }
+                        else
+                        {
+                            CDImage.Visibility = Visibility.Hidden;
+                        }
+                        MessageBox.Show(album);
                         mediaPlayer.Play();
                         timer.Start();
                     }
@@ -343,6 +384,23 @@ namespace MusicPlayList
                 MessageBox.Show("Please select a song from the playlist.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
-               
+
+        private void StartRotatingDisk()
+        {
+            if (timer == null)
+                return;
+
+            timer.Interval = TimeSpan.FromMilliseconds(20); // Cập nhật mỗi 20ms
+            timer.Tick += (s, e) =>
+            {
+                // Quay đĩa
+                rotateTransform.Angle += 1;
+                if (rotateTransform.Angle >= 360)
+                {
+                    rotateTransform.Angle = 0;
+                }
+            };
+        }
+
     }
 }

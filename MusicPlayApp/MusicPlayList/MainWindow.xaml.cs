@@ -67,7 +67,35 @@ namespace MusicPlayList
         // Phương thức bất đồng bộ để tải danh sách yêu thích
         private async void InitializeFavoriteList()
         {
-            await LoadFavoriteList();
+            try
+            {
+                if (CurrentUser != null)
+                {
+                    int userId = CurrentUser.UserId;
+                    FavoriteService favoriteService = new FavoriteService();
+
+                    // Get the list of favorite songs
+                    var favoriteSongs = await favoriteService.GetFavoritesByUserIdAsync(userId);
+
+                    // Populate the favoriteList with the fetched songs
+                    favoriteList = favoriteSongs;
+
+                    // Clear and reload the FavoriteListBox
+                    FavoriteListBox.Items.Clear();
+                    foreach (var song in favoriteList)
+                    {
+                        FavoriteListBox.Items.Add(song);  // Add the song to the FavoriteListBox
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("User not authenticated. Please log in again.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading favorite songs: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void InitializePlayer()
@@ -187,7 +215,7 @@ namespace MusicPlayList
         private void ShuffleButton_Click(object sender, RoutedEventArgs e)
         {
             isShuffle = true;
-            PLayMode.Content = "Shuffle";
+            PLayMode.Content = "Shuffle";  // Hiển thị chế độ Shuffle
             MessageBox.Show("Shuffle mode activated.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
@@ -198,21 +226,21 @@ namespace MusicPlayList
             MessageBox.Show("Sequential mode activated.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-        private void MediaPlayer_MediaEnded(object sender, RoutedEventArgs e)
-        {
-            if (isShuffle)
-            {
-                var random = new Random();
-                playlistListBox.SelectedIndex = random.Next(playlist.Count);
-            }
-            else
-            {
-                if (playlistListBox.SelectedIndex < playlist.Count - 1)
-                    playlistListBox.SelectedIndex++;
-                else
-                    playlistListBox.SelectedIndex = 0;
-            }
-        }
+        //private void MediaPlayer_MediaEnded(object sender, RoutedEventArgs e)
+        //{
+        //    if (isShuffle)
+        //    {
+        //        var random = new Random();
+        //        playlistListBox.SelectedIndex = random.Next(playlist.Count);
+        //    }
+        //    else
+        //    {
+        //        if (playlistListBox.SelectedIndex < playlist.Count - 1)
+        //            playlistListBox.SelectedIndex++;
+        //        else
+        //            playlistListBox.SelectedIndex = 0;
+        //    }
+        //}
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
@@ -313,12 +341,16 @@ namespace MusicPlayList
             
         }
 
+        private bool isPlayingFromFavoriteList = false;  // Biến để theo dõi nguồn phát nhạc
+        private bool isPlayingFromPlaylist = false;  // Biến theo dõi đang phát từ Playlist
+
+
         private void FavoriteListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (FavoriteListBox.SelectedItem != null)
             {
-                // Khi một bài hát được chọn trong FavoriteListBox, đặt SelectedItem của PlaylistListBox về null
-                playlistListBox.SelectedItem = null;
+                isPlayingFromFavoriteList = true;  // Đánh dấu là đang phát từ Favorite List
+                isPlayingFromPlaylist = false;    // Dừng phát từ Playlist
 
                 var selectedSong = FavoriteListBox.SelectedItem as Song;
                 if (selectedSong != null)
@@ -326,29 +358,15 @@ namespace MusicPlayList
                     var album = selectedSong.Album;
                     txtText.Text = selectedSong.Title;
 
-                    // Check if the file exists
                     if (File.Exists(album))
                     {
                         mediaPlayer.Source = new Uri(album);
-                        string selectedPath = album;
-                        string fileExtension = System.IO.Path.GetExtension(selectedPath).ToLower();
-                        bool isMusic = fileExtension == ".mp3" || fileExtension == ".wav";
-                        if (isMusic)
-                        {
-                            CDImage.Visibility = Visibility.Visible;
-                            StartRotatingDisk();
-
-                            // Reset trạng thái phát nhạc
-                            isPlaying = true;
-                            PauseButton.Content = "Pause";
-                        }
-                        else
-                        {
-                            CDImage.Visibility = Visibility.Hidden;
-                        }
-
                         mediaPlayer.Play();
                         timer.Start();
+
+                        // Quay đĩa khi phát nhạc
+                        CDImage.Visibility = Visibility.Visible; // Hiển thị đĩa quay
+                        StartRotatingDisk();  // Bắt đầu quay đĩa
                     }
                     else
                     {
@@ -357,6 +375,7 @@ namespace MusicPlayList
                 }
             }
         }
+
 
 
 
@@ -595,39 +614,26 @@ namespace MusicPlayList
         {
             if (playlistListBox.SelectedItem != null)
             {
-                // Khi một bài hát được chọn trong PlaylistListBox, đặt SelectedItem của FavoriteListBox về null
-                FavoriteListBox.SelectedItem = null;
+                isPlayingFromPlaylist = true;  // Đánh dấu là đang phát từ Playlist
+                isPlayingFromFavoriteList = false;    // Dừng phát từ Favorite List
 
                 var selectedTitle = playlistListBox.SelectedItem.ToString();
                 var selectedSong = playlist.FirstOrDefault(s => s.Title == selectedTitle);
+
                 if (selectedSong != null)
                 {
                     var album = selectedSong.Album;
                     txtText.Text = selectedSong.Title;
 
-                    // Check if the file exists
                     if (File.Exists(album))
                     {
                         mediaPlayer.Source = new Uri(album);
-                        string selectedPath = album;
-                        string fileExtension = System.IO.Path.GetExtension(selectedPath).ToLower();
-                        bool isMusic = fileExtension == ".mp3" || fileExtension == ".wav";
-                        if (isMusic)
-                        {
-                            CDImage.Visibility = Visibility.Visible;
-                            StartRotatingDisk();
-
-                            // Reset trạng thái phát nhạc
-                            isPlaying = true;
-                            PauseButton.Content = "Pause";
-                        }
-                        else
-                        {
-                            CDImage.Visibility = Visibility.Hidden;
-                        }
-
                         mediaPlayer.Play();
                         timer.Start();
+
+                        // Hiển thị đĩa quay khi bài hát đang phát
+                        CDImage.Visibility = Visibility.Visible; // Hiển thị đĩa quay
+                        StartRotatingDisk();  // Bắt đầu quay đĩa
                     }
                     else
                     {
@@ -639,37 +645,170 @@ namespace MusicPlayList
 
 
 
+        private List<Song> favoriteList = new List<Song>(); // Ensure this is initialized
+
         private void MediaPlayer_MediaEnded(object sender, EventArgs e)
         {
-            // Tìm chỉ mục của bài hiện tại
-            int currentIndex = playlist.FindIndex(s => s.Title == txtText.Text);
-
-            // Nếu bài hiện tại không phải là bài cuối, chuyển sang bài tiếp theo
-            if (currentIndex >= 0 && currentIndex < playlist.Count - 1)
+            if (isShuffle)
             {
-                var nextSong = playlist[currentIndex + 1];
-                var album = nextSong.Album;
-                txtText.Text = nextSong.Title;
+                if (isPlayingFromFavoriteList)
+                {
+                    var random = new Random();
+                    int currentIndex = favoriteList.FindIndex(s => s.Title == txtText.Text);  // Get current song index in favorite list
+                    int nextSongIndex = random.Next(favoriteList.Count);  // Pick a random song from Favorite List
 
-                // Kiểm tra và phát bài nhạc tiếp theo
-                if (File.Exists(album))
-                {
-                    mediaPlayer.Source = new Uri(album);
-                    mediaPlayer.Play();
-                    timer.Start();
+                    // Ensure that the random song is not the current one
+                    while (nextSongIndex == currentIndex)
+                    {
+                        nextSongIndex = random.Next(favoriteList.Count);
+                    }
+
+                    var nextSong = favoriteList[nextSongIndex];
+                    var album = nextSong.Album;
+                    txtText.Text = nextSong.Title;
+
+                    if (File.Exists(album))
+                    {
+                        mediaPlayer.Source = new Uri(album);
+                        mediaPlayer.Play();
+                        timer.Start();
+
+                        // Update the selected item in Favorite List
+                        FavoriteListBox.SelectedItem = nextSong;
+                    }
+                    else
+                    {
+                        MessageBox.Show($"File not found: {album}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
                 }
-                else
+                else if (isPlayingFromPlaylist)
                 {
-                    MessageBox.Show($"File not found: {album}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    var random = new Random();
+                    int currentIndex = playlist.FindIndex(s => s.Title == txtText.Text);  // Get current song index in playlist
+                    int nextSongIndex = random.Next(playlist.Count);  // Pick a random song from Playlist
+
+                    // Ensure that the random song is not the current one
+                    while (nextSongIndex == currentIndex)
+                    {
+                        nextSongIndex = random.Next(playlist.Count);
+                    }
+
+                    var nextSong = playlist[nextSongIndex];
+                    var album = nextSong.Album;
+                    txtText.Text = nextSong.Title;
+
+                    if (File.Exists(album))
+                    {
+                        mediaPlayer.Source = new Uri(album);
+                        mediaPlayer.Play();
+                        timer.Start();
+
+                        // Update the selected item in Playlist
+                        playlistListBox.SelectedItem = nextSong;
+                    }
+                    else
+                    {
+                        MessageBox.Show($"File not found: {album}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
                 }
             }
             else
             {
-                // Nếu hết danh sách, có thể dừng hoặc lặp lại danh sách tùy ý
-                MessageBox.Show("Đã hết danh sách phát", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+                // Sequential Mode (one song after another)
+                if (isPlayingFromFavoriteList)
+                {
+                    int currentIndex = favoriteList.FindIndex(s => s.Title == txtText.Text);
+
+                    if (currentIndex >= 0 && currentIndex < favoriteList.Count - 1)
+                    {
+                        var nextSong = favoriteList[currentIndex + 1];
+                        var album = nextSong.Album;
+                        txtText.Text = nextSong.Title;
+
+                        if (File.Exists(album))
+                        {
+                            mediaPlayer.Source = new Uri(album);
+                            mediaPlayer.Play();
+                            timer.Start();
+
+                            // Update the selected item in Favorite List
+                            FavoriteListBox.SelectedItem = nextSong;
+                        }
+                        else
+                        {
+                            MessageBox.Show($"File not found: {album}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        }
+                    }
+                    else
+                    {
+                        // Reached the end of Favorite List, go back to the first song
+                        var firstSong = favoriteList[0];
+                        var album = firstSong.Album;
+                        txtText.Text = firstSong.Title;
+
+                        if (File.Exists(album))
+                        {
+                            mediaPlayer.Source = new Uri(album);
+                            mediaPlayer.Play();
+                            timer.Start();
+
+                            // Update the selected item to the first song in Favorite List
+                            FavoriteListBox.SelectedItem = firstSong;
+                        }
+                        else
+                        {
+                            MessageBox.Show($"File not found: {album}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        }
+                    }
+                }
+                else if (isPlayingFromPlaylist)
+                {
+                    int currentIndex = playlist.FindIndex(s => s.Title == txtText.Text);
+
+                    if (currentIndex >= 0 && currentIndex < playlist.Count - 1)
+                    {
+                        var nextSong = playlist[currentIndex + 1];
+                        var album = nextSong.Album;
+                        txtText.Text = nextSong.Title;
+
+                        if (File.Exists(album))
+                        {
+                            mediaPlayer.Source = new Uri(album);
+                            mediaPlayer.Play();
+                            timer.Start();
+
+                            // Update the selected item in Playlist
+                            playlistListBox.SelectedItem = nextSong;
+                        }
+                        else
+                        {
+                            MessageBox.Show($"File not found: {album}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        }
+                    }
+                    else
+                    {
+                        // Reached the end of Playlist, go back to the first song
+                        var firstSong = playlist[0];
+                        var album = firstSong.Album;
+                        txtText.Text = firstSong.Title;
+
+                        if (File.Exists(album))
+                        {
+                            mediaPlayer.Source = new Uri(album);
+                            mediaPlayer.Play();
+                            timer.Start();
+
+                            // Update the selected item to the first song in Playlist
+                            playlistListBox.SelectedItem = firstSong;
+                        }
+                        else
+                        {
+                            MessageBox.Show($"File not found: {album}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        }
+                    }
+                }
             }
         }
-
 
 
         private void UpdateButton_Click(object sender, RoutedEventArgs e)

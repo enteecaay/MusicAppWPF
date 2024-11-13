@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MusicPlayList"
         mc:Ignorable="d"
-        Title="Add New Song" Height="200" Width="350" WindowStartupLocation="CenterScreen" ResizeMode="NoResize">
+        Title="Add New Song" Height="300" Width="500" WindowStartupLocation="CenterScreen" ResizeMode="NoResize">
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -19,16 +19,17 @@
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
-
-        <TextBlock Text="Title:" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Margin="5"/>
+        <TextBlock x:Name="TitleLabel" Text="Title:" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Margin="5"/>
         <TextBox x:Name="TitleTextBox" Grid.Row="0" Grid.Column="1" Margin="5" Grid.ColumnSpan="2"/>
 
-        <TextBlock Text="Artist:" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Margin="5"/>
+        <TextBlock x:Name="ArtistLabel" Text="Artist:" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Margin="5"/>
         <TextBox x:Name="ArtistTextBox" Grid.Row="1" Grid.Column="1" Margin="5" Grid.ColumnSpan="2"/>
 
         <TextBlock Text="Album File Path:" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Margin="5"/>
         <TextBox x:Name="AlbumTextBox" Grid.Row="2" Grid.Column="1" Margin="5"/>
         <Button Content="Browse" Grid.Row="2" Grid.Column="2" Margin="5" Click="BrowseButton_Click"/>
+        <ListBox x:Name="SongsListBox" Margin="5,0,5,10" Grid.RowSpan="4" Grid.Column="1"/>
+
 
         <StackPanel Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="5">
             <Button Content="Save" Width="75" Margin="5" Click="SaveButton_Click"/>

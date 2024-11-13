@@ -864,10 +864,5 @@ namespace MusicPlayList
             timer.Start(); // Bắt đầu quay đĩa ngay khi khởi tạo
         }
 
-
-
-
-
-
     }
 }

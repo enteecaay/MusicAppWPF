@@ -9,6 +9,8 @@ namespace MusicPlayList
     {
         private SongService _songService = new();
         public Song SelectedOne { get; set; }
+        public List<Song> SelectedSongs { get; set; } = new List<Song>(); 
+
         public AddSongWindow()
         {
             InitializeComponent();
@@ -18,11 +20,13 @@ namespace MusicPlayList
                 ArtistTextBox.Text = SelectedOne.Artist;
                 AlbumTextBox.Text = SelectedOne.Album;
             }
-            
+            SongsListBox.Visibility = Visibility.Hidden;
+
         }
 
         public void SaveButton_Click(object sender, RoutedEventArgs e)
         {
+            
             // Retrieve the input values
             string title = TitleTextBox.Text;
             string artist = ArtistTextBox.Text;
@@ -36,6 +40,13 @@ namespace MusicPlayList
                 SelectedOne.Album = AlbumTextBox.Text;
 
                 _songService.Update(SelectedOne);
+            }
+            else if (SelectedSongs.Any())
+            {
+                    foreach (var songs in SelectedSongs)
+                    {
+                        _songService.AddSong(songs);
+                    }
             }
             else
             {
@@ -63,12 +74,41 @@ namespace MusicPlayList
 
         private void BrowseButton_Click(object sender, RoutedEventArgs e)
         {
-            // Open a file dialog to select the album file path
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "Audio Files|*.mp3;*.mp4;*.wav;*.flac|All Files|*.*";
+            // Open a file dialog to select multiple album file paths
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                Filter = "Audio Files|*.mp3;*.mp4;*.wav;*.flac|All Files|*.*",
+                Multiselect = true
+            };
+
             if (openFileDialog.ShowDialog() == true)
             {
-                AlbumTextBox.Text = openFileDialog.FileName;
+                foreach (var fileName in openFileDialog.FileNames)
+                {
+                    var newSong = new Song
+                    {
+                        Title = System.IO.Path.GetFileNameWithoutExtension(fileName),
+                        Artist = "Unknown Artist",
+                        Album = fileName
+                    };
+
+                    SelectedSongs.Add(newSong);
+                }
+
+                // Update the UI to reflect the selected songs
+                // For example, you can display the selected songs in a ListBox
+                SongsListBox.ItemsSource = null;
+                SongsListBox.ItemsSource = SelectedSongs.Select(song => song.Title).ToList();
+                if (SelectedSongs.Count > 1)
+                {
+                    TitleLabel.Visibility = Visibility.Hidden;
+                    TitleTextBox.Text = null;
+                    TitleTextBox.Visibility = Visibility.Hidden;
+                    ArtistLabel.Visibility = Visibility.Hidden;
+                    ArtistTextBox.Text = null;
+                    ArtistTextBox.Visibility = Visibility.Hidden;
+                    SongsListBox.Visibility = Visibility.Visible;
+                }
             }
         }
     }

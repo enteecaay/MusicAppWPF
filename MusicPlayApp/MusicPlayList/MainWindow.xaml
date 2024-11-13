@@ -21,7 +21,7 @@
                Foreground="White" FontSize="14" HorizontalAlignment="Left"/>
 
         <!-- Playlist ListBox -->
-        <ListBox x:Name="playlistListBox" Width="220" Height="270" 
+        <ListBox x:Name="playlistListBox" Width="220" Height="270" SelectionChanged="PlaylistListBox_SelectionChanged"
          HorizontalAlignment="Left" VerticalAlignment="Top" 
          Margin="10,40,0,0" 
          ItemsSource="{Binding Playlists}"
@@ -51,13 +51,10 @@
         </WrapPanel>
 
         <!-- Control Buttons -->
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" 
-                    VerticalAlignment="Top" Margin="0,420,0,0">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" 
+                    VerticalAlignment="Top" Margin="295,418,0,0">
             <Button Content="Previous" Width="70" Click="Button_Click_1" Style="{StaticResource StyledButton}"/>
-            <Button Content="Play" Width="70" Margin="10,0" Click="PlayButton_Click" Background="#4CAF50" Foreground="White" FontFamily="Segoe UI"/>
-            <Button Content="Pause" Width="70" Margin="10,0" Click="PauseButton_Click" Background="#FFA726" Foreground="White" FontFamily="Segoe UI"/>
-            <Button Content="Resume" Width="70" Margin="10,0" Click="ResumeButton_Click" Background="#4CAF50" Foreground="White" FontFamily="Segoe UI"/>
-            <Button Content="Stop" Width="70" Margin="10,0" Click="StopButton_Click" Background="#F44336" Foreground="White" FontFamily="Segoe UI"/>
+            <Button x:Name="PauseButton"  Content="Pause" Width="70" Margin="10,0" Click="PauseButton_Click" Background="#FFA726" Foreground="White" FontFamily="Segoe UI"/>
             <Button Content="Next" Width="70" Click="Button_Click" Style="{StaticResource StyledButton}"/>
         </StackPanel>
 
@@ -92,20 +89,24 @@
 
         <!-- Shuffle and Sequential Buttons -->
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" 
-                    VerticalAlignment="Bottom" Margin="0,0,0,20">
+                    VerticalAlignment="Top" Margin="0,456,0,0">
             <Button Content="Shuffle" Width="80" Click="ShuffleButton_Click" Style="{StaticResource StyledButton}"/>
             <Button Content="Sequential" Width="80" Margin="10,0" Click="SequentialButton_Click" Style="{StaticResource StyledButton}"/>
-            <Label x:Name="PLayMode" Width="100" FontSize="12" />
+            <Label x:Name="PLayMode" Width="100" FontSize="12" Foreground="White"/>
         </StackPanel>
 
         <!-- Song Information TextBox -->
         <TextBox x:Name="txtText" Width="400" Height="30" 
-         Margin="250,280,250,0" VerticalAlignment="Top" 
+         Margin="0,313,0,0" VerticalAlignment="Top" 
          TextWrapping="Wrap" Background="#444444" 
          Foreground="White" FontFamily="Segoe UI" FontSize="12"
          HorizontalAlignment="Center" 
          TextAlignment="Center" IsReadOnly="True"
          />
+        <Button x:Name="UpdateButton" Content="Update Music" Width="100" Height="30" 
+            HorizontalAlignment="Left" VerticalAlignment="Top" 
+            Margin="130,370,0,0"
+            Style="{StaticResource StyledButton}" Click="UpdateButton_Click"/>
         <Image x:Name="CDImage" HorizontalAlignment="Center" Height="202" Margin="0,40,0,0" VerticalAlignment="Top" Width="203">
             <Image.Source>
                 <BitmapImage UriSource="Storage/CDImage.png"/>
@@ -114,9 +115,5 @@
                 <RotateTransform x:Name="rotateTransform" Angle="0" CenterX="100" CenterY="100" />
             </Image.RenderTransform>
         </Image>
-        <Button x:Name="UpdateButton" Content="Update Music" Width="100" Height="30" 
-            HorizontalAlignment="Left" VerticalAlignment="Top" 
-            Margin="130,370,0,0"
-            Style="{StaticResource StyledButton}" Click="UpdateButton_Click"/>
     </Grid>
 </Window>

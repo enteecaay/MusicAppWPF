@@ -30,6 +30,7 @@ namespace MusicPlayList
         private string[] files;
         private string[] paths;
 
+
         private SongService _songService = new SongService();
 
 
@@ -42,6 +43,8 @@ namespace MusicPlayList
             volumeSlider.Value = 100;
             VolumeText.Text = "100%";
             LoadTitleAllSongs();
+            mediaPlayer.MediaEnded += MediaPlayer_MediaEnded;
+
         }
 
         private void InitializePlayer()
@@ -78,43 +81,56 @@ namespace MusicPlayList
 
         private void PlayButton_Click(object sender, RoutedEventArgs e)
         {
-            if (playlistListBox.SelectedItem != null)
-            {
-                var selectedTitle = playlistListBox.SelectedItem.ToString();
-                var selectedSong = playlist.FirstOrDefault(s => s.Title == selectedTitle);
+            //if (playlistListBox.SelectedItem != null)
+            //{
+            //    var selectedTitle = playlistListBox.SelectedItem.ToString();
+            //    var selectedSong = playlist.FirstOrDefault(s => s.Title == selectedTitle);
 
-                if (selectedSong != null)
-                {
-                    var filePath = selectedSong.Album;
+            //    if (selectedSong != null)
+            //    {
+            //        var filePath = selectedSong.Album;
 
-                    // Check if the file exists
-                    if (File.Exists(filePath))
-                    {
-                        mediaPlayer.Source = new Uri(filePath);
-                        mediaPlayer.Play();
-                        timer.Start();
-                    }
-                    else
-                    {
-                        MessageBox.Show($"File not found: {filePath}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
-                }
-                else
-                {
-                    MessageBox.Show("Selected song not found in the playlist.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
-            else
-            {
-                MessageBox.Show("Please select a song from the playlist.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
+            //        // Check if the file exists
+            //        if (File.Exists(filePath))
+            //        {
+            //            mediaPlayer.Source = new Uri(filePath);
+            //            mediaPlayer.Play();
+            //            timer.Start();
+            //        }
+            //        else
+            //        {
+            //            MessageBox.Show($"File not found: {filePath}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            //        }
+            //    }
+            //    else
+            //    {
+            //        MessageBox.Show("Selected song not found in the playlist.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            //    }
+            //}
+            //else
+            //{
+            //    MessageBox.Show("Please select a song from the playlist.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+            //}
         }
 
 
+        private bool isPlaying = true;
 
         private void PauseButton_Click(object sender, RoutedEventArgs e)
         {
-            mediaPlayer.Pause();
+            if (isPlaying)
+            {
+                mediaPlayer.Pause();
+                isPlaying = false; // Cập nhật trạng thái thành "đã dừng"
+                PauseButton.Content = "Continue";
+            }
+            else
+            {
+                mediaPlayer.Play();
+                isPlaying = true; // Cập nhật trạng thái thành "đang phát"
+                PauseButton.Content = "Pause";
+
+            }
         }
 
         private void StopButton_Click(object sender, RoutedEventArgs e)
@@ -176,7 +192,39 @@ namespace MusicPlayList
         {
             if (playlistListBox.SelectedIndex < playlistListBox.Items.Count - 1)
             {
-                playlistListBox.SelectedIndex++;
+                 playlistListBox.SelectedIndex++;
+                if (playlistListBox.SelectedItem != null)
+                {
+                    var selectedTitle = playlistListBox.SelectedItem.ToString();
+                    var selectedSong = playlist.FirstOrDefault(s => s.Title == selectedTitle);
+
+                    if (selectedSong != null)
+                    {
+                        var filePath = selectedSong.Album;
+
+                        // Check if the file exists
+                        if (File.Exists(filePath))
+                        {
+                            mediaPlayer.Source = new Uri(filePath);
+                            mediaPlayer.Play();
+                            timer.Start();
+                        }
+                        else
+                        {
+                            MessageBox.Show($"File not found: {filePath}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("Selected song not found in the playlist.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Please select a song from the playlist.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                //mediaPlayer.Play();
+                //timer.Start();
             }
         }
 
@@ -185,6 +233,37 @@ namespace MusicPlayList
             if (playlistListBox.SelectedIndex > 0)
             {
                 playlistListBox.SelectedIndex--;
+
+                if (playlistListBox.SelectedItem != null)
+                {
+                    var selectedTitle = playlistListBox.SelectedItem.ToString();
+                    var selectedSong = playlist.FirstOrDefault(s => s.Title == selectedTitle);
+
+                    if (selectedSong != null)
+                    {
+                        var filePath = selectedSong.Album;
+
+                        // Check if the file exists
+                        if (File.Exists(filePath))
+                        {
+                            mediaPlayer.Source = new Uri(filePath);
+                            mediaPlayer.Play();
+                            timer.Start();
+                        }
+                        else
+                        {
+                            MessageBox.Show($"File not found: {filePath}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("Selected song not found in the playlist.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Please select a song from the playlist.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
             }
         }
 
@@ -307,11 +386,38 @@ namespace MusicPlayList
             }
         }
 
-        private void ResumeButton_Click(object sender, RoutedEventArgs e)
+        private void MediaPlayer_MediaEnded(object sender, EventArgs e)
         {
-            mediaPlayer.Play();
-            timer.Start();
+            // Tìm chỉ mục của bài hiện tại
+            int currentIndex = playlist.FindIndex(s => s.Title == txtText.Text);
+
+            // Nếu bài hiện tại không phải là bài cuối, chuyển sang bài tiếp theo
+            if (currentIndex >= 0 && currentIndex < playlist.Count - 1)
+            {
+                var nextSong = playlist[currentIndex + 1];
+                var album = nextSong.Album;
+                txtText.Text = nextSong.Title;
+
+                // Kiểm tra và phát bài nhạc tiếp theo
+                if (File.Exists(album))
+                {
+                    mediaPlayer.Source = new Uri(album);
+                    mediaPlayer.Play();
+                    timer.Start();
+                }
+                else
+                {
+                    MessageBox.Show($"File not found: {album}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            else
+            {
+                // Nếu hết danh sách, có thể dừng hoặc lặp lại danh sách tùy ý
+                MessageBox.Show("Đã hết danh sách phát", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
         }
+
+
 
         private void UpdateButton_Click(object sender, RoutedEventArgs e)
         {

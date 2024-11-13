@@ -130,8 +130,8 @@ namespace MusicPlayList
                 currentTimeText.Text = mediaPlayer.Position.ToString(@"mm\:ss");
                 totalTimeText.Text = mediaPlayer.NaturalDuration.TimeSpan.ToString(@"mm\:ss");
             }
-
         }
+
 
         private void ImportButton_Click(object sender, RoutedEventArgs e)
         {
@@ -340,8 +340,19 @@ namespace MusicPlayList
             var percentage = mouseX / TimeCount.ActualWidth;
             var newTime = mediaPlayer.NaturalDuration.TimeSpan.TotalSeconds * percentage;
 
+            // Update the position of the media player based on the slider's new value
             mediaPlayer.Position = TimeSpan.FromSeconds(newTime);
         }
+
+        private void TimeCount_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (mediaPlayer.NaturalDuration.HasTimeSpan)
+            {
+                // Sync the slider with the media player position
+                mediaPlayer.Position = TimeSpan.FromSeconds(TimeCount.Value);
+            }
+        }
+
 
         private void SaveBtn_Click(object sender, RoutedEventArgs e)
         {

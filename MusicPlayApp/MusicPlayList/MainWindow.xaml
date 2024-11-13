@@ -257,6 +257,7 @@
                     <Slider x:Name="TimeCount" Grid.Column="1"
                             Style="{StaticResource ModernSlider}"
                             Minimum="0" Maximum="100"
+                            ValueChanged="TimeCount_ValueChanged"
                             MouseLeftButtonDown="TimeCount_MouseLeftButtonDown"/>
                     <TextBlock x:Name="totalTimeText" 
                               Grid.Column="2" 

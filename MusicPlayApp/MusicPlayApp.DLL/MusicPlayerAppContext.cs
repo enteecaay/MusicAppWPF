@@ -7,21 +7,13 @@ namespace MusicPlayApp.DLL;
 
 public partial class MusicPlayerAppContext : DbContext
 {
-    public MusicPlayerAppContext()
-    {
-    }
-
+    public MusicPlayerAppContext() { }
     public MusicPlayerAppContext(DbContextOptions<MusicPlayerAppContext> options)
-        : base(options)
-    {
-    }
+        : base(options) { }
 
     public virtual DbSet<FavoriteList> FavoriteLists { get; set; }
-
     public virtual DbSet<Playlist> Playlists { get; set; }
-
     public virtual DbSet<Song> Songs { get; set; }
-
     public virtual DbSet<User> Users { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

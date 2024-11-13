@@ -97,14 +97,14 @@ namespace MusicPlayList
                 _userService.AddUser(newUser);
                 MessageBox.Show("Đăng ký thành công! Bạn có thể đăng nhập ngay bây giờ.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
                 User registerUser = _userService.Authenticate(username, password);
-                Playlist playlist = new Playlist
+                FavoriteList favoriteList = new FavoriteList
                 {
                     UserId = registerUser.UserId,
-                    PlaylistName = $"{username}"
+                    ListName = $"{username}"
                 };
                 try
                 {
-                    _playlistService.Create(playlist);
+                    _playlistService.Create(favoriteList);
                 }
                 catch (DbUpdateException ex)
                 {

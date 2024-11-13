@@ -145,11 +145,15 @@ namespace MusicPlayList
         private void ShuffleButton_Click(object sender, RoutedEventArgs e)
         {
             isShuffle = true;
+            PLayMode.Content = "Shuffle";
+            MessageBox.Show("Shuffle mode activated.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void SequentialButton_Click(object sender, RoutedEventArgs e)
         {
             isShuffle = false;
+            PLayMode.Content = "Sequential";
+            MessageBox.Show("Sequential mode activated.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void MediaPlayer_MediaEnded(object sender, RoutedEventArgs e)
@@ -224,9 +228,11 @@ namespace MusicPlayList
 
                 if (selectedSong != null)
                 {
-                    _songService.RemoveSong(selectedSong);
-                    
-                    MessageBox.Show($"Deleted song: {selectedTitle}", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                    var result = MessageBox.Show($"Are you sure you want to delete the song '{selectedSong.Title}'?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        _songService.RemoveSong(selectedSong);
+                    }
                 }
                 else
                 {
@@ -306,5 +312,37 @@ namespace MusicPlayList
             mediaPlayer.Play();
             timer.Start();
         }
+
+        private void UpdateButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (playlistListBox.SelectedItem != null)
+            {
+                var selectedTitle = playlistListBox.SelectedItem.ToString();
+                var selectedSong = playlist.FirstOrDefault(s => s.Title == selectedTitle);
+
+                if (selectedSong != null)
+                {
+                    AddSongWindow addSongWindow = new AddSongWindow();
+                    addSongWindow.TitleTextBox.Text = selectedSong.Title;
+                    addSongWindow.ArtistTextBox.Text = selectedSong.Artist;
+                    addSongWindow.AlbumTextBox.Text = selectedSong.Album;
+                    addSongWindow.SelectedOne = selectedSong;
+                    addSongWindow.ShowDialog();
+
+                    
+                    playlistListBox.ItemsSource = null;
+                    LoadTitleAllSongs();
+                }
+                else
+                {
+                    MessageBox.Show("Selected song not found in the playlist.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Please select a song from the playlist.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+               
     }
 }

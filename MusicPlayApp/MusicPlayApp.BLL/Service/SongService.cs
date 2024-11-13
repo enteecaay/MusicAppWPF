@@ -30,5 +30,11 @@ namespace MusicPlayApp.BLL.Service
         {
             _songRepository.Remove(song);
         }
+        public void Update(Song song)
+        {
+            _songRepository.Update(song);
+        }
+
+
     }
 }

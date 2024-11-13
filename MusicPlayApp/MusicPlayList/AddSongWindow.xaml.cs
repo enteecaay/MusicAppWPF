@@ -8,27 +8,46 @@ namespace MusicPlayList
     public partial class AddSongWindow : Window
     {
         private SongService _songService = new();
+        public Song SelectedOne { get; set; }
         public AddSongWindow()
         {
             InitializeComponent();
+            if(SelectedOne != null)
+            {
+                TitleTextBox.Text = SelectedOne.Title;
+                ArtistTextBox.Text = SelectedOne.Artist;
+                AlbumTextBox.Text = SelectedOne.Album;
+            }
+            
         }
 
-        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        public void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             // Retrieve the input values
             string title = TitleTextBox.Text;
             string artist = ArtistTextBox.Text;
             string albumFilePath = AlbumTextBox.Text;
 
-            // Create a new Song object
-            var newSong = new Song
+            if (SelectedOne != null)
             {
-                Title = title,
-                Artist = artist,
-                Album = albumFilePath
-            };
+                // Update the song details
+                SelectedOne.Title = TitleTextBox.Text;
+                SelectedOne.Artist = ArtistTextBox.Text;
+                SelectedOne.Album = AlbumTextBox.Text;
 
-            _songService.AddSong(newSong);
+                _songService.Update(SelectedOne);
+            }
+            else
+            {
+                // Create a new Song object
+                var newSong = new Song
+                {
+                    Title = title,
+                    Artist = artist,
+                    Album = albumFilePath
+                };
+                _songService.AddSong(newSong);
+            }
 
             // Close the window
             this.DialogResult = true;

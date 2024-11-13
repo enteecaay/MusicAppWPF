@@ -44,7 +44,7 @@ namespace MusicPlayApp.DLL.Repository
         public void Update(Song song)
         {
             _context = new();
-            _context.Songs.Add(song);
+            _context.Songs.Update(song);
             _context.SaveChanges();
         }
 
@@ -55,7 +55,7 @@ namespace MusicPlayApp.DLL.Repository
             _context.SaveChanges();
         }
 
-
+    
 
     }
 }

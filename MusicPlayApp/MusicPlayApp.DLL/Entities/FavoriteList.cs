@@ -16,4 +16,5 @@ public partial class FavoriteList
     public virtual Song Song { get; set; }
 
     public virtual User User { get; set; }
+
 }

@@ -1,53 +1,31 @@
--- Create the database
-CREATE DATABASE MusicPlayListDB;
+CREATE DATABASE MusicPlayerApp;
 GO
-
--- Use the database
-USE MusicPlayListDB;
-GO
-
--- Create the Users table
 CREATE TABLE Users (
-    Id INT PRIMARY KEY IDENTITY(1,1),
-    Username NVARCHAR(50) NOT NULL UNIQUE,
-    Password NVARCHAR(255) NOT NULL
+    UserId INT PRIMARY KEY IDENTITY(1,1),
+    UserName NVARCHAR(50) ,
+    Password NVARCHAR(256) 
 );
-GO
-
--- Create the Songs table
 CREATE TABLE Songs (
-    Id INT PRIMARY KEY IDENTITY(1,1),
+    SongId INT PRIMARY KEY IDENTITY(1,1),
     Title NVARCHAR(100) NOT NULL,
     Artist NVARCHAR(100) NOT NULL,
     Album NVARCHAR(100),
-    Url NVARCHAR(255) NOT NULL,
-);
+	FOREIGN KEY (SongId) REFERENCES Songs(SongId) ON DELETE CASCADE
 
-GO
--- Create the Playlists table
+);
 CREATE TABLE Playlists (
-    Id INT PRIMARY KEY IDENTITY(1,1),
-    Name NVARCHAR(100) NOT NULL,
-    UserId INT NOT NULL,
-    FOREIGN KEY (UserId) REFERENCES Users(Id)
+    PlaylistId INT IDENTITY(1,1) PRIMARY KEY,
+    UserId INT,
+    SongId INT,
+    PlaylistName NVARCHAR(100),
+    FOREIGN KEY (UserId) REFERENCES Users(UserId) ON DELETE CASCADE,
+    FOREIGN KEY (SongId) REFERENCES Songs(SongId) ON DELETE CASCADE
 );
-GO
-
--- Create the PlaylistSongs table (many-to-many relationship between Playlists and Songs)
-CREATE TABLE PlaylistSongs (
-    PlaylistId INT NOT NULL,
-    SongId INT NOT NULL,
-    PRIMARY KEY (PlaylistId, SongId),
-    FOREIGN KEY (PlaylistId) REFERENCES Playlists(Id),
-    FOREIGN KEY (SongId) REFERENCES Songs(Id)
-);
-GO
-
--- Create the FavoriteMusic table
-CREATE TABLE FavoriteMusic (
-    Id INT PRIMARY KEY IDENTITY(1,1),
-    UserId INT NOT NULL,
-    SongId INT NOT NULL,
-    FOREIGN KEY (UserId) REFERENCES Users(Id),
-    FOREIGN KEY (SongId) REFERENCES Songs(Id)
+CREATE TABLE FavoriteLists (
+    FavoriteListId INT IDENTITY(1,1) PRIMARY KEY,
+    UserId INT,
+    SongId INT,
+    ListName NVARCHAR(100),
+    FOREIGN KEY (UserId) REFERENCES Users(UserId) ON DELETE CASCADE,
+    FOREIGN KEY (SongId) REFERENCES Songs(SongId) ON DELETE CASCADE
 );

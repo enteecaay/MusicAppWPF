@@ -30,7 +30,7 @@
          FontFamily="Segoe UI" FontSize="12" />
 
         <!-- Favorite ListBox -->
-        <ListBox x:Name="FavoriteListBox" Width="220" Height="270" 
+        <ListBox x:Name="FavoriteListBox" Width="220" Height="270" DisplayMemberPath="Title" SelectionChanged="FavoriteListBox_SelectionChanged"
          HorizontalAlignment="Right" VerticalAlignment="Top" 
          Margin="0,40,10,0" 
          ItemsSource="{Binding FavoriteSongs}"
@@ -103,17 +103,22 @@
          HorizontalAlignment="Center" 
          TextAlignment="Center" IsReadOnly="True"
          />
+
+        <Image x:Name="CDImage" HorizontalAlignment="Center" Height="202" Margin="0,55,0,0" VerticalAlignment="Top" Width="203"
+       RenderTransformOrigin="0.5,0.5">
+            <!-- Đặt điểm gốc của phép biến đổi ở giữa -->
+            <Image.Source>
+                <BitmapImage UriSource="https://cdn-icons-png.flaticon.com/512/4910/4910593.png"/>
+            </Image.Source>
+            <Image.RenderTransform>
+                <RotateTransform x:Name="rotateTransform" Angle="0" />
+            </Image.RenderTransform>
+        </Image>
         <Button x:Name="UpdateButton" Content="Update Music" Width="100" Height="30" 
             HorizontalAlignment="Left" VerticalAlignment="Top" 
             Margin="130,370,0,0"
             Style="{StaticResource StyledButton}" Click="UpdateButton_Click"/>
-        <Image x:Name="CDImage" HorizontalAlignment="Center" Height="202" Margin="0,40,0,0" VerticalAlignment="Top" Width="203">
-            <Image.Source>
-                <BitmapImage UriSource="Storage/CDImage.png"/>
-            </Image.Source>
-            <Image.RenderTransform>
-                <RotateTransform x:Name="rotateTransform" Angle="0" CenterX="100" CenterY="100" />
-            </Image.RenderTransform>
-        </Image>
+        
+
     </Grid>
 </Window>

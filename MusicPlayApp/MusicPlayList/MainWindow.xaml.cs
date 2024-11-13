@@ -14,6 +14,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using System.Windows.Media.Animation; // Để sử dụng DoubleAnimation
+
 
 
 namespace MusicPlayList
@@ -31,20 +33,41 @@ namespace MusicPlayList
         private string[] paths;
 
 
+
+
+
+
         private SongService _songService = new SongService();
 
 
         public MusicPlayApp.DLL.Entities.User CurrentUser { get; set; }
 
-        public MainWindow()
+        public MainWindow(MusicPlayApp.DLL.Entities.User currentUser)
         {
             InitializeComponent();
+
+            CurrentUser = currentUser;
+
+
+            if (CurrentUser == null)
+            {
+                MessageBox.Show("User not authenticated. Please log in again.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Close();
+            }
+
             InitializePlayer();
+            mediaPlayer.MediaEnded += MediaPlayer_MediaEnded;
+
             volumeSlider.Value = 100;
             VolumeText.Text = "100%";
             LoadTitleAllSongs();
-            mediaPlayer.MediaEnded += MediaPlayer_MediaEnded;
+            InitializeFavoriteList();
+        }
 
+        // Phương thức bất đồng bộ để tải danh sách yêu thích
+        private async void InitializeFavoriteList()
+        {
+            await LoadFavoriteList();
         }
 
         private void InitializePlayer()
@@ -53,6 +76,7 @@ namespace MusicPlayList
             timer = new DispatcherTimer();
             timer.Interval = TimeSpan.FromSeconds(1);
             timer.Tick += Timer_Tick;
+            CDImage.Visibility = Visibility.Hidden;
         }
 
         private void Timer_Tick(object sender, EventArgs e)
@@ -114,6 +138,7 @@ namespace MusicPlayList
         }
 
 
+
         private bool isPlaying = true;
 
         private void PauseButton_Click(object sender, RoutedEventArgs e)
@@ -121,15 +146,16 @@ namespace MusicPlayList
             if (isPlaying)
             {
                 mediaPlayer.Pause();
-                isPlaying = false; // Cập nhật trạng thái thành "đã dừng"
+                isPlaying = false;
                 PauseButton.Content = "Continue";
+                timer.Stop(); // Dừng timer để ngừng quay đĩa
             }
             else
             {
                 mediaPlayer.Play();
-                isPlaying = true; // Cập nhật trạng thái thành "đang phát"
+                isPlaying = true;
                 PauseButton.Content = "Pause";
-
+                timer.Start(); // Bắt đầu lại timer để quay đĩa
             }
         }
 
@@ -291,44 +317,212 @@ namespace MusicPlayList
         {
             if (FavoriteListBox.SelectedItem != null)
             {
-                txtText.Text = FavoriteListBox.SelectedItem.ToString();
-                mediaPlayer.Source = new Uri(txtText.Text);
-                mediaPlayer.Play();
-                timer.Start();
+                // Khi một bài hát được chọn trong FavoriteListBox, đặt SelectedItem của PlaylistListBox về null
+                playlistListBox.SelectedItem = null;
+
+                var selectedSong = FavoriteListBox.SelectedItem as Song;
+                if (selectedSong != null)
+                {
+                    var album = selectedSong.Album;
+                    txtText.Text = selectedSong.Title;
+
+                    // Check if the file exists
+                    if (File.Exists(album))
+                    {
+                        mediaPlayer.Source = new Uri(album);
+                        string selectedPath = album;
+                        string fileExtension = System.IO.Path.GetExtension(selectedPath).ToLower();
+                        bool isMusic = fileExtension == ".mp3" || fileExtension == ".wav";
+                        if (isMusic)
+                        {
+                            CDImage.Visibility = Visibility.Visible;
+                            StartRotatingDisk();
+
+                            // Reset trạng thái phát nhạc
+                            isPlaying = true;
+                            PauseButton.Content = "Pause";
+                        }
+                        else
+                        {
+                            CDImage.Visibility = Visibility.Hidden;
+                        }
+
+                        mediaPlayer.Play();
+                        timer.Start();
+                    }
+                    else
+                    {
+                        MessageBox.Show($"File not found: {album}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
             }
         }
 
-        private void DeleteBtn_Click(object sender, RoutedEventArgs e)
+
+
+        private async void DeleteBtn_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Handle deletion from Playlist
+                if (playlistListBox.SelectedItem != null)
+                {
+                    // Reset FavoriteListBox selection to avoid conflicts
+                    FavoriteListBox.SelectedItem = null;
+
+                    var selectedTitle = playlistListBox.SelectedItem.ToString();
+                    var selectedSong = playlist.FirstOrDefault(s => s.Title == selectedTitle);
+
+                    if (selectedSong != null)
+                    {
+                        var result = MessageBox.Show($"Are you sure you want to delete the song '{selectedSong.Title}' from the playlist?",
+                                                      "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+                        if (result == MessageBoxResult.Yes)
+                        {
+                            // Call service to remove the song from Playlist
+                            _songService.RemoveSong(selectedSong);
+                            MessageBox.Show($"The song '{selectedSong.Title}' has been removed from the playlist.",
+                                             "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                            // Reload the Playlist
+                            playlistListBox.ItemsSource = null;
+                            LoadTitleAllSongs();
+
+                            // Reload FavoriteListBox to reflect changes immediately
+                            FavoriteListBox.ItemsSource = null;  // Clear the existing items
+                            await LoadFavoriteList();  // Load updated favorite list
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("Selected song not found in the playlist.",
+                                         "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+                // Handle deletion from Favorite List
+                else if (FavoriteListBox.SelectedItem != null)
+                {
+                    // Reset playlistListBox selection to avoid conflicts
+                    playlistListBox.SelectedItem = null;
+
+                    var selectedSong = FavoriteListBox.SelectedItem as Song;
+
+                    if (selectedSong != null && CurrentUser != null)
+                    {
+                        var result = MessageBox.Show($"Are you sure you want to delete the song '{selectedSong.Title}' from your favorite list?",
+                                                      "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+                        if (result == MessageBoxResult.Yes)
+                        {
+                            // Call service to remove the song from Favorite List
+                            FavoriteService favoriteService = new FavoriteService();
+                            await favoriteService.RemoveFavoriteAsync(CurrentUser.UserId, selectedSong.SongId);
+                            MessageBox.Show($"The song '{selectedSong.Title}' has been removed from your favorite list.",
+                                             "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                            // Reload the Favorite List
+                            FavoriteListBox.ItemsSource = null;
+                            await LoadFavoriteList();  // Reload updated favorite list
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("Selected song not found in the favorite list.",
+                                         "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Please select a song from either the playlist or the favorite list.",
+                                     "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Handle unexpected errors
+                MessageBox.Show($"An error occurred while attempting to delete the song: {ex.Message}",
+                                 "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+
+
+
+
+
+        private async void Addbtn_Click(object sender, RoutedEventArgs e)
         {
             if (playlistListBox.SelectedItem != null)
             {
+                // Lấy bài hát được chọn
                 var selectedTitle = playlistListBox.SelectedItem.ToString();
                 var selectedSong = playlist.FirstOrDefault(s => s.Title == selectedTitle);
 
                 if (selectedSong != null)
                 {
-                    var result = MessageBox.Show($"Are you sure you want to delete the song '{selectedSong.Title}'?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Question);
-                    if (result == MessageBoxResult.Yes)
+                    int songId = selectedSong.SongId;
+
+                    // Kiểm tra người dùng hiện tại
+                    if (CurrentUser != null)
                     {
-                        _songService.RemoveSong(selectedSong);
+                        int userId = CurrentUser.UserId; // Lấy UserId từ người dùng đã đăng nhập
+
+                        // Gọi service để thêm bài hát vào danh sách yêu thích
+                        FavoriteService favoriteService = new FavoriteService();
+                        await favoriteService.AddFavoriteAsync(userId, songId, "My Favorites");
+
+                        // Load lại danh sách yêu thích
+                        await LoadFavoriteList();
+                    }
+                    else
+                    {
+                        MessageBox.Show("User not authenticated. Please log in again.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
                 else
                 {
-                    MessageBox.Show("Selected song not found in the playlist.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show("No song selected to add to favorites.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
             else
             {
-                MessageBox.Show("Please select a song from the playlist.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Please select a song from the playlist.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
-            playlistListBox.ItemsSource = null;
-            LoadTitleAllSongs();
         }
 
-        private void Addbtn_Click(object sender, RoutedEventArgs e)
+        private async Task LoadFavoriteList()
         {
-            
+            if (CurrentUser != null)
+            {
+                try
+                {
+                    int userId = CurrentUser.UserId;
+
+                    FavoriteService favoriteService = new FavoriteService();
+
+                    // Lấy danh sách bài hát yêu thích
+                    var favoriteSongs = await favoriteService.GetFavoritesByUserIdAsync(userId);
+
+                    // Làm sạch danh sách trước khi thêm mới
+                    FavoriteListBox.Items.Clear();
+
+                    // Hiển thị các bài hát yêu thích
+                    foreach (var song in favoriteSongs)
+                    {
+                        FavoriteListBox.Items.Add(song);  // Thêm đối tượng Song vào FavoriteListBox
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"An error occurred while loading favorite songs: {ex.Message}",
+                                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            else
+            {
+                MessageBox.Show("User not authenticated. Please log in again.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void playlistListBox_Loaded(object sender, RoutedEventArgs e)
@@ -353,17 +547,33 @@ namespace MusicPlayList
 
         public async void LoadTitleAllSongs()
         {
-            playlist = await _songService.GetAllSongsAsync();
-            playlistListBox.Items.Clear();
-            foreach (var song in playlist)
+            try
             {
-                playlistListBox.Items.Add(song.Title);
+                // Lấy danh sách tất cả các bài hát từ service
+                playlist = await _songService.GetAllSongsAsync();
+
+                // Làm sạch danh sách trước khi thêm mới
+                playlistListBox.Items.Clear();
+
+                // Thêm các bài hát vào playlistListBox
+                foreach (var song in playlist)
+                {
+                    playlistListBox.Items.Add(song.Title);  // Chỉ thêm tiêu đề bài hát
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An error occurred while loading songs: {ex.Message}",
+                                "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
         private void PlaylistListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (playlistListBox.SelectedItem != null)
             {
+                // Khi một bài hát được chọn trong PlaylistListBox, đặt SelectedItem của FavoriteListBox về null
+                FavoriteListBox.SelectedItem = null;
+
                 var selectedTitle = playlistListBox.SelectedItem.ToString();
                 var selectedSong = playlist.FirstOrDefault(s => s.Title == selectedTitle);
                 if (selectedSong != null)
@@ -375,6 +585,23 @@ namespace MusicPlayList
                     if (File.Exists(album))
                     {
                         mediaPlayer.Source = new Uri(album);
+                        string selectedPath = album;
+                        string fileExtension = System.IO.Path.GetExtension(selectedPath).ToLower();
+                        bool isMusic = fileExtension == ".mp3" || fileExtension == ".wav";
+                        if (isMusic)
+                        {
+                            CDImage.Visibility = Visibility.Visible;
+                            StartRotatingDisk();
+
+                            // Reset trạng thái phát nhạc
+                            isPlaying = true;
+                            PauseButton.Content = "Pause";
+                        }
+                        else
+                        {
+                            CDImage.Visibility = Visibility.Hidden;
+                        }
+
                         mediaPlayer.Play();
                         timer.Start();
                     }
@@ -385,6 +612,8 @@ namespace MusicPlayList
                 }
             }
         }
+
+
 
         private void MediaPlayer_MediaEnded(object sender, EventArgs e)
         {
@@ -449,6 +678,33 @@ namespace MusicPlayList
                 MessageBox.Show("Please select a song from the playlist.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
-               
+
+
+
+        private void StartRotatingDisk()
+        {
+            if (timer == null)
+                return;
+
+            // Reduce the interval to make the update smoother
+            timer.Interval = TimeSpan.FromMilliseconds(10); // Cập nhật mỗi 10ms thay vì 20ms
+            timer.Tick += (s, e) =>
+            {
+                // Quay đĩa mượt mà hơn với việc tăng nhỏ góc quay
+                rotateTransform.Angle += 0.5;  // Thay đổi góc quay mỗi 0.5 độ
+                if (rotateTransform.Angle >= 360)
+                {
+                    rotateTransform.Angle = 0;
+                }
+            };
+
+            timer.Start(); // Bắt đầu quay đĩa ngay khi khởi tạo
+        }
+
+
+
+
+
+
     }
 }

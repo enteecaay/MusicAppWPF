@@ -50,12 +50,33 @@ namespace MusicPlayApp.DLL.Repository
 
         public void Remove(Song song)
         {
+            if (song == null)
+            {
+                throw new ArgumentNullException(nameof(song), "The song cannot be null.");
+            }
+
             _context = new();
-            _context.Songs.Remove(song);
-            _context.SaveChanges();
+
+            // Xóa các mục liên quan trong bảng FavoriteLists
+            var relatedFavorites = _context.FavoriteLists.Where(f => f.SongId == song.SongId).ToList();
+            _context.FavoriteLists.RemoveRange(relatedFavorites);
+
+            // Xóa bài hát
+            var existingSong = _context.Songs.Find(song.SongId);
+            if (existingSong != null)
+            {
+                _context.Songs.Remove(existingSong);
+                _context.SaveChanges();
+            }
+            else
+            {
+                throw new Exception("The song does not exist in the database.");
+            }
         }
 
-    
+
+
+
 
     }
 }

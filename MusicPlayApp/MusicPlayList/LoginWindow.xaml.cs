@@ -29,6 +29,7 @@ namespace MusicPlayList
             string username = UsernameTextBox.Text.Trim();
             string password = PasswordBox.Password;
 
+            // Kiểm tra thông tin đầu vào
             if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             {
                 MessageBox.Show("Vui lòng nhập cả tên đăng nhập và mật khẩu.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -37,24 +38,29 @@ namespace MusicPlayList
 
             try
             {
-                // Validate login credentials through UserService
+                // Gọi hàm Validate để kiểm tra tài khoản
                 bool isValidUser = _userService.ValidateUser(username, password);
 
                 if (isValidUser)
                 {
-                    MessageBox.Show("Đăng nhập thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
-
-                    // Open MainWindow and close LoginWindow
-
-
+                    // Gọi hàm Authenticate để lấy thông tin người dùng
                     User loggedInUser = _userService.Authenticate(username, password);
 
-                    MainWindow mainWindow = new MainWindow();
-                    mainWindow.CurrentUser = loggedInUser;
-                    //mainWindow.LoadUserSongs();
-                    mainWindow.Show();
-                    
-                    this.Close();
+                    if (loggedInUser != null)
+                    {
+                        MessageBox.Show("Đăng nhập thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                        // Khởi tạo MainWindow và truyền thông tin người dùng
+                        MainWindow mainWindow = new MainWindow(loggedInUser);
+                        mainWindow.Show();
+
+                        // Đóng LoginWindow
+                        this.Close();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Đã xảy ra lỗi khi lấy thông tin người dùng. Vui lòng thử lại.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
                 }
                 else
                 {
@@ -65,8 +71,8 @@ namespace MusicPlayList
             {
                 MessageBox.Show($"Đã xảy ra lỗi khi đăng nhập: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-
         }
+
 
         private void RegisterButton_Click(object sender, RoutedEventArgs e)
         {

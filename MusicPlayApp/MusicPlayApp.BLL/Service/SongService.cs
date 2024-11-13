@@ -28,7 +28,20 @@ namespace MusicPlayApp.BLL.Service
 
         public void RemoveSong(Song song)
         {
-            _songRepository.Remove(song);
+            if (song == null)
+            {
+                throw new ArgumentNullException(nameof(song), "The song cannot be null.");
+            }
+
+            try
+            {
+                _songRepository.Remove(song);
+            }
+            catch (Exception ex)
+            {
+                // Ghi log hoặc xử lý lỗi nếu cần
+                throw new Exception($"An error occurred while removing the song: {ex.Message}", ex);
+            }
         }
         public void Update(Song song)
         {

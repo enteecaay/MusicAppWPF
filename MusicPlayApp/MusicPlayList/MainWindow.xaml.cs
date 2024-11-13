@@ -42,27 +42,40 @@ namespace MusicPlayList
 
         public MusicPlayApp.DLL.Entities.User CurrentUser { get; set; }
 
+        private bool isFullScreen = false; // Thêm biến theo dõi trạng thái full screen
+
         public MainWindow(MusicPlayApp.DLL.Entities.User currentUser)
         {
             InitializeComponent();
-
             CurrentUser = currentUser;
-
-
             if (CurrentUser == null)
             {
                 MessageBox.Show("User not authenticated. Please log in again.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 Close();
             }
-
             InitializePlayer();
             mediaPlayer.MediaEnded += MediaPlayer_MediaEnded;
-
+            mediaPlayer.MouseLeftButtonDown += MediaPlayer_MouseLeftButtonDown;
+            this.KeyDown += Window_KeyDown; // Thêm xử lý phím ESC
             volumeSlider.Value = 100;
             VolumeText.Text = "100%";
             LoadTitleAllSongs();
             InitializeFavoriteList();
         }
+
+        // Xử lý double click bằng đếm thời gian giữa các lần click
+        private DateTime lastClick = DateTime.MinValue;
+        private void MediaPlayer_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if ((DateTime.Now - lastClick).TotalMilliseconds < 300) // Double click threshold
+            {
+                ToggleFullScreen();
+                e.Handled = true;
+            }
+            lastClick = DateTime.Now;
+        }
+
+
 
         // Phương thức bất đồng bộ để tải danh sách yêu thích
         private async void InitializeFavoriteList()
@@ -215,14 +228,14 @@ namespace MusicPlayList
         private void ShuffleButton_Click(object sender, RoutedEventArgs e)
         {
             isShuffle = true;
-            PLayMode.Content = "Shuffle";  // Hiển thị chế độ Shuffle
+            //PLayMode.Content = "Shuffle";  // Hiển thị chế độ Shuffle
             MessageBox.Show("Shuffle mode activated.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void SequentialButton_Click(object sender, RoutedEventArgs e)
         {
             isShuffle = false;
-            PLayMode.Content = "Sequential";
+            //PLayMode.Content = "Sequential";
             MessageBox.Show("Sequential mode activated.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
@@ -341,16 +354,19 @@ namespace MusicPlayList
             
         }
 
-        private bool isPlayingFromFavoriteList = false;  // Biến để theo dõi nguồn phát nhạc
-        private bool isPlayingFromPlaylist = false;  // Biến theo dõi đang phát từ Playlist
+        private bool isPlayingFromFavoriteList = false;  
+        private bool isPlayingFromPlaylist = false;
 
 
         private void FavoriteListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (FavoriteListBox.SelectedItem != null)
             {
-                isPlayingFromFavoriteList = true;  // Đánh dấu là đang phát từ Favorite List
-                isPlayingFromPlaylist = false;    // Dừng phát từ Playlist
+                isPlayingFromFavoriteList = true;  // Mark as playing from Favorite List
+                isPlayingFromPlaylist = false;    // Stop playing from Playlist
+
+                // Reset the previous selection
+                playlistListBox.SelectedItem = null;
 
                 var selectedSong = FavoriteListBox.SelectedItem as Song;
                 if (selectedSong != null)
@@ -360,13 +376,34 @@ namespace MusicPlayList
 
                     if (File.Exists(album))
                     {
-                        mediaPlayer.Source = new Uri(album);
-                        mediaPlayer.Play();
-                        timer.Start();
+                        string fileExtension = System.IO.Path.GetExtension(album).ToLower();
 
-                        // Quay đĩa khi phát nhạc
-                        CDImage.Visibility = Visibility.Visible; // Hiển thị đĩa quay
-                        StartRotatingDisk();  // Bắt đầu quay đĩa
+                        if (fileExtension == ".mp3" || fileExtension == ".wav")
+                        {
+                            // Audio file: Show disk and play audio
+                            cdContainer.Visibility = Visibility.Visible;  // Show disk container
+                            CDImage.Visibility = Visibility.Visible;  // Show rotating disk
+                            mediaPlayer.Visibility = Visibility.Collapsed;  // Hide video player
+                            StartRotatingDisk();  // Start rotating disk
+
+                            // Play the audio
+                            mediaPlayer.Source = new Uri(album);
+                            mediaPlayer.Play();
+                            timer.Start();
+                        }
+                        else
+                        {
+                            // Non-audio file (video): Show video and hide the disk
+                            cdContainer.Visibility = Visibility.Collapsed;  // Hide disk container
+                            CDImage.Visibility = Visibility.Collapsed;  // Hide rotating disk
+                            mediaPlayer.Visibility = Visibility.Visible;  // Show video player
+                            StopRotatingDisk(); // Stop disk rotation
+
+                            // Play the video or other media
+                            mediaPlayer.Source = new Uri(album);
+                            mediaPlayer.Play();
+                            timer.Start();
+                        }
                     }
                     else
                     {
@@ -375,6 +412,8 @@ namespace MusicPlayList
                 }
             }
         }
+
+
 
 
 
@@ -614,8 +653,11 @@ namespace MusicPlayList
         {
             if (playlistListBox.SelectedItem != null)
             {
-                isPlayingFromPlaylist = true;  // Đánh dấu là đang phát từ Playlist
-                isPlayingFromFavoriteList = false;    // Dừng phát từ Favorite List
+                isPlayingFromPlaylist = true;  // Mark as playing from Playlist
+                isPlayingFromFavoriteList = false;  // Stop playing from Favorite List
+
+                // Reset the previous selection
+                FavoriteListBox.SelectedItem = null;
 
                 var selectedTitle = playlistListBox.SelectedItem.ToString();
                 var selectedSong = playlist.FirstOrDefault(s => s.Title == selectedTitle);
@@ -627,13 +669,33 @@ namespace MusicPlayList
 
                     if (File.Exists(album))
                     {
-                        mediaPlayer.Source = new Uri(album);
-                        mediaPlayer.Play();
-                        timer.Start();
+                        string fileExtension = System.IO.Path.GetExtension(album).ToLower();
+                        if (fileExtension == ".mp3" || fileExtension == ".wav")
+                        {
+                            // Audio file: Show disk and play audio
+                            cdContainer.Visibility = Visibility.Visible;  // Show disk container
+                            CDImage.Visibility = Visibility.Visible;  // Show rotating disk
+                            mediaPlayer.Visibility = Visibility.Collapsed;  // Hide video player
+                            StartRotatingDisk();  // Start rotating disk
 
-                        // Hiển thị đĩa quay khi bài hát đang phát
-                        CDImage.Visibility = Visibility.Visible; // Hiển thị đĩa quay
-                        StartRotatingDisk();  // Bắt đầu quay đĩa
+                            // Play the audio
+                            mediaPlayer.Source = new Uri(album);
+                            mediaPlayer.Play();
+                            timer.Start();
+                        }
+                        else
+                        {
+                            // Non-audio file (video): Show video and hide the disk
+                            cdContainer.Visibility = Visibility.Collapsed;  // Hide disk container
+                            CDImage.Visibility = Visibility.Collapsed;  // Hide rotating disk
+                            mediaPlayer.Visibility = Visibility.Visible;  // Show video player
+                            StopRotatingDisk(); // Stop disk rotation
+
+                            // Play the video or other media
+                            mediaPlayer.Source = new Uri(album);
+                            mediaPlayer.Play();
+                            timer.Start();
+                        }
                     }
                     else
                     {
@@ -642,6 +704,18 @@ namespace MusicPlayList
                 }
             }
         }
+
+
+        private void StopRotatingDisk()
+        {
+            if (rotateTransform != null)
+            {
+                rotateTransform.Angle = 0;
+            }
+        }
+
+
+
 
 
 
@@ -864,9 +938,69 @@ namespace MusicPlayList
             timer.Start(); // Bắt đầu quay đĩa ngay khi khởi tạo
         }
 
+        // Xử lý double click để phóng to/thu nhỏ video
+        private void mediaPlayer_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            ToggleFullScreen();
+        }
 
+        // Thêm xử lý phím ESC
+        private void Window_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape && isFullScreen)
+            {
+                ToggleFullScreen();
+                e.Handled = true;
+            }
+        }
 
+        // Method chuyển đổi chế độ full screen
+        private void ToggleFullScreen()
+        {
+            if (!isFullScreen)
+            {
+                // Chuyển sang full screen
+                playerContainer.SetValue(Grid.ColumnSpanProperty, 3);
+                playerContainer.SetValue(Grid.ColumnProperty, 0);
+                playerContainer.SetValue(Grid.RowSpanProperty, 3);
+                playerContainer.Margin = new Thickness(0);
+                mediaPlayer.Height = Double.NaN; // Auto height
+                mediaPlayer.MaxHeight = Double.PositiveInfinity;
+                mediaPlayer.MinHeight = 0;
+                mediaPlayer.Margin = new Thickness(0);
 
+                // Ẩn các control khác
+                txtText.Visibility = Visibility.Collapsed;
+                currentTimeText.Visibility = Visibility.Collapsed;
+                totalTimeText.Visibility = Visibility.Collapsed;
+                TimeCount.Visibility = Visibility.Collapsed;
+                PauseButton.Visibility = Visibility.Collapsed;
+                PLayMode.Visibility = Visibility.Collapsed;
+
+                isFullScreen = true;
+            }
+            else
+            {
+                // Trở về chế độ bình thường
+                playerContainer.SetValue(Grid.ColumnSpanProperty, 1);
+                playerContainer.SetValue(Grid.ColumnProperty, 1);
+                playerContainer.SetValue(Grid.RowSpanProperty, 1);
+                playerContainer.Margin = new Thickness(10);
+                mediaPlayer.Height = 300;
+                mediaPlayer.MaxHeight = 300;
+                mediaPlayer.MinHeight = 300;
+
+                // Hiện lại các control
+                txtText.Visibility = Visibility.Visible;
+                currentTimeText.Visibility = Visibility.Visible;
+                totalTimeText.Visibility = Visibility.Visible;
+                TimeCount.Visibility = Visibility.Visible;
+                PauseButton.Visibility = Visibility.Visible;
+                PLayMode.Visibility = Visibility.Visible;
+
+                isFullScreen = false;
+            }
+        }
 
 
     }

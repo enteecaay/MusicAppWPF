@@ -393,7 +393,6 @@ namespace MusicPlayList
                         }
                         else
                         {
-                            // Non-audio file (video): Show video and hide the disk
                             cdContainer.Visibility = Visibility.Collapsed;  // Hide disk container
                             CDImage.Visibility = Visibility.Collapsed;  // Hide rotating disk
                             mediaPlayer.Visibility = Visibility.Visible;  // Show video player

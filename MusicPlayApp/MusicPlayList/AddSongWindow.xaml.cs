@@ -41,7 +41,7 @@ namespace MusicPlayList
 
                 _songService.Update(SelectedOne);
             }
-            else if (SelectedSongs.Any())
+            else if (SelectedSongs.Count > 1)
             {
                     foreach (var songs in SelectedSongs)
                     {
@@ -91,7 +91,6 @@ namespace MusicPlayList
                         Artist = "Unknown Artist",
                         Album = fileName
                     };
-
                     SelectedSongs.Add(newSong);
                 }
 
@@ -108,6 +107,10 @@ namespace MusicPlayList
                     ArtistTextBox.Text = null;
                     ArtistTextBox.Visibility = Visibility.Hidden;
                     SongsListBox.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    AlbumTextBox.Text = SelectedSongs.First().Album;
                 }
             }
         }

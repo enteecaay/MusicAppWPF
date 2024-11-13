@@ -65,7 +65,7 @@ namespace MusicPlayList
         {
             // Open a file dialog to select the album file path
             OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "Audio Files|*.mp3;*.wav;*.flac|All Files|*.*";
+            openFileDialog.Filter = "Audio Files|*.mp3;*.mp4;*.wav;*.flac|All Files|*.*";
             if (openFileDialog.ShowDialog() == true)
             {
                 AlbumTextBox.Text = openFileDialog.FileName;

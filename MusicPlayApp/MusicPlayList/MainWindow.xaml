@@ -289,14 +289,11 @@
                 <StackPanel Orientation="Horizontal" 
                             HorizontalAlignment="Center"
                             Margin="0,10">
-                    <Button Content="Shuffle" Width="100"
+                    <Button x:Name="PlaybackModeButton"  Content="Shuffle" Width="100"
                             Style="{StaticResource ModernButton}"
-                            Click="ShuffleButton_Click"/>
-                    <Button Content="Sequential" Width="100"
-                            Style="{StaticResource ModernButton}"
-                            Margin="10,5"
-                            Click="SequentialButton_Click"/>
-                    <TextBlock x:Name="PLayMode" Foreground="White"/>
+                            Click="PlaybackModeButton_Click"/>
+
+                    <TextBlock x:Name="PlayMode" Foreground="White"/>
                 </StackPanel>
             </StackPanel>
         </Grid>

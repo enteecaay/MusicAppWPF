@@ -48,7 +48,6 @@ namespace MusicPlayList
 
                     if (loggedInUser != null)
                     {
-                        MessageBox.Show("Đăng nhập thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
 
                         // Khởi tạo MainWindow và truyền thông tin người dùng
                         MainWindow mainWindow = new MainWindow(loggedInUser);

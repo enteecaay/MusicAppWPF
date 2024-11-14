@@ -161,6 +161,8 @@
                             Click="ImportButton_Click"/>
                     <Button Content="Update Music" Style="{StaticResource ModernButton}"
                             x:Name="UpdateButton" Click="UpdateButton_Click"/>
+                    <Button x:Name="Logout" Content="Logout" Background="#ff0000" Style="{StaticResource ModernButton}" Click="Logout_Click"
+                    />
                 </StackPanel>
 
                 <ListBox x:Name="playlistListBox" Style="{StaticResource ModernListBox}"
@@ -277,7 +279,7 @@
                             Content="Pause" 
                             Width="90"
                             Style="{StaticResource ModernButton}"
-                            Background="#1DB954"
+                            Background="#8c1010"
                             Margin="10,5"
                             Click="PauseButton_Click"/>
                     <Button Content="Next" Width="90" 

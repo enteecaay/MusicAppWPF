@@ -40,7 +40,7 @@ namespace MusicPlayList
         private SongService _songService = new SongService();
 
 
-        public MusicPlayApp.DAL.Entities.User CurrentUser { get; set; }
+        public MusicPlayApp.DAL.Entities.User? CurrentUser { get; set; }
 
         private bool isFullScreen = false; // Thêm biến theo dõi trạng thái full screen
 
@@ -165,12 +165,15 @@ namespace MusicPlayList
                 mediaPlayer.Pause();
                 isPlaying = false;
                 PauseButton.Content = "Continue";
+                PauseButton.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1DB954"));
+
                 timer.Stop(); // Stop the timer to pause the rotation of the disc
             }
             else
             {
                 mediaPlayer.Play();
                 isPlaying = true;
+                PauseButton.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#8c1010"));
                 PauseButton.Content = "Pause";
                 timer.Start();
             }
@@ -947,8 +950,30 @@ namespace MusicPlayList
             }
         }
 
-
-
-
+        private void Logout_Click(object sender, RoutedEventArgs e)
+        {
+            // Stop any playing music
+            if (isPlaying)
+            {
+                StopMusic();
+            }
+            var result = MessageBox.Show("Do you really want to logout", "Logout Confirmation", MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+            if (result == MessageBoxResult.Yes)
+            {
+                MainWindow mainWindow = new MainWindow(CurrentUser);
+                // Clear the current user session
+                CurrentUser = null;
+                this.Close();
+                // Navigate to the login window
+                LoginWindow loginWindow = new LoginWindow();
+                loginWindow.ShowDialog();
+            }
+            return;
+        }
+        private void StopMusic()
+        {
+            isPlaying = false;
+        }
     }
 }

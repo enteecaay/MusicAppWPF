@@ -149,45 +149,6 @@ namespace MusicPlayList
 
         }
 
-
-
-
-        private void PlayButton_Click(object sender, RoutedEventArgs e)
-        {
-            //if (playlistListBox.SelectedItem != null)
-            //{
-            //    var selectedTitle = playlistListBox.SelectedItem.ToString();
-            //    var selectedSong = playlist.FirstOrDefault(s => s.Title == selectedTitle);
-
-            //    if (selectedSong != null)
-            //    {
-            //        var filePath = selectedSong.Album;
-
-            //        // Check if the file exists
-            //        if (File.Exists(filePath))
-            //        {
-            //            mediaPlayer.Source = new Uri(filePath);
-            //            mediaPlayer.Play();
-            //            timer.Start();
-            //        }
-            //        else
-            //        {
-            //            MessageBox.Show($"File not found: {filePath}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            //        }
-            //    }
-            //    else
-            //    {
-            //        MessageBox.Show("Selected song not found in the playlist.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            //    }
-            //}
-            //else
-            //{
-            //    MessageBox.Show("Please select a song from the playlist.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
-            //}
-        }
-
-
-
         private bool isPlaying = true;
 
         private void PauseButton_Click(object sender, RoutedEventArgs e)
@@ -675,7 +636,7 @@ namespace MusicPlayList
             {
                 // Reset the pause/play button state
                 isPlaying = false;
-                PauseButton.Content = "Play"; // Set to "Play" as initial state
+                PauseButton.Content = "Play";
 
                 isPlayingFromPlaylist = true;  // Mark as playing from Playlist
                 isPlayingFromFavoriteList = false;  // Stop playing from Favorite List
@@ -740,11 +701,6 @@ namespace MusicPlayList
                 rotateTransform.Angle = 0;
             }
         }
-
-
-
-
-
 
         private List<Song> favoriteList = new List<Song>(); 
 

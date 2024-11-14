@@ -202,12 +202,13 @@ namespace MusicPlayList
 
             if (isShuffle)
             {
-                PlaybackModeButton.Content = "Sequential";
+                PlaybackModeButton.Content = "Shuffle";
+                PlaybackModeButton.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1DB954"));
                 MessageBox.Show("Chế độ phát ngẫu nhiên đã được kích hoạt.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else
             {
-                PlaybackModeButton.Content = "Shuffle";
+                PlaybackModeButton.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#333333"));
                 MessageBox.Show("Chế độ phát tuần tự đã được kích hoạt.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }

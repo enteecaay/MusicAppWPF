@@ -192,19 +192,26 @@ namespace MusicPlayList
 
         private void PauseButton_Click(object sender, RoutedEventArgs e)
         {
+            // Check if mediaPlayer has a valid media source
+            if (mediaPlayer.Source == null)
+            {
+                MessageBox.Show("No song is currently loaded. Please select a song to play.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
             if (isPlaying)
             {
                 mediaPlayer.Pause();
                 isPlaying = false;
                 PauseButton.Content = "Continue";
-                timer.Stop(); // Dừng timer để ngừng quay đĩa
+                timer.Stop(); // Stop the timer to pause the rotation of the disc
             }
             else
             {
                 mediaPlayer.Play();
                 isPlaying = true;
                 PauseButton.Content = "Pause";
-                timer.Start(); // Bắt đầu lại timer để quay đĩa
+                timer.Start(); // Start the timer to resume the rotation of the disc
             }
         }
 
@@ -458,87 +465,78 @@ namespace MusicPlayList
         {
             try
             {
+                // Stop and reset the media player
+                mediaPlayer.Stop();
+                timer?.Stop();  // Stop the timer to prevent any further updates
+                txtText.Text = "";  // Clear the song title display
+                mediaPlayer.Source = null;  // Clear the media source
+
+                // Reset the timeline and progress bar
+                TimeCount.Value = 0;  // Reset progress slider to the start
+                currentTimeText.Text = "00:00";  // Display 00:00 as the current time
+                totalTimeText.Text = "00:00";  // Display 00:00 as the total time
+
                 // Handle deletion from Playlist
                 if (playlistListBox.SelectedItem != null)
                 {
-                    // Reset FavoriteListBox selection to avoid conflicts
-                    FavoriteListBox.SelectedItem = null;
+                    FavoriteListBox.SelectedItem = null;  // Reset FavoriteListBox selection
 
                     var selectedTitle = playlistListBox.SelectedItem.ToString();
                     var selectedSong = playlist.FirstOrDefault(s => s.Title == selectedTitle);
 
                     if (selectedSong != null)
                     {
-                        var result = MessageBox.Show($"Bạn có chắc chắn muốn xóa bài hát '{selectedSong.Title}' khỏi playlist?",
-                                                      "Xác nhận xóa", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                        var result = MessageBox.Show($"Do you want to delete '{selectedSong.Title}' from the playlist?",
+                                                     "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Question);
 
                         if (result == MessageBoxResult.Yes)
                         {
-                            // Call service to remove the song from Playlist
-                            _songService.RemoveSong(selectedSong);
-                            MessageBox.Show($"Bài hát '{selectedSong.Title}' đã được xóa khỏi playlist.",
-                                             "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                            _songService.RemoveSong(selectedSong);  // Remove the song from the database
 
-                            // Reload the Playlist
+                            // Reload Playlist and Favorite List to reflect the change
                             playlistListBox.ItemsSource = null;
                             LoadTitleAllSongs();
-
-                            // Reload FavoriteListBox to reflect changes immediately
-                            FavoriteListBox.ItemsSource = null;  // Clear the existing items
-                            await LoadFavoriteList();  // Load updated favorite list
+                            FavoriteListBox.ItemsSource = null;
+                            await LoadFavoriteList();
                         }
-                    }
-                    else
-                    {
-                        MessageBox.Show("Không tìm thấy bài hát được chọn trong playlist.",
-                                         "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
                 // Handle deletion from Favorite List
                 else if (FavoriteListBox.SelectedItem != null)
                 {
-                    // Reset playlistListBox selection to avoid conflicts
-                    playlistListBox.SelectedItem = null;
+                    playlistListBox.SelectedItem = null;  // Reset playlistListBox selection
 
                     var selectedSong = FavoriteListBox.SelectedItem as Song;
 
                     if (selectedSong != null && CurrentUser != null)
                     {
-                        var result = MessageBox.Show($"Bạn có chắc chắn muốn xóa bài hát '{selectedSong.Title}' khỏi danh sách yêu thích?",
-                                                      "Xác nhận xóa", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                        var result = MessageBox.Show($"Do you want to delete '{selectedSong.Title}' from your favorite list?",
+                                                     "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Question);
 
                         if (result == MessageBoxResult.Yes)
                         {
-                            // Call service to remove the song from Favorite List
-                            FavoriteService favoriteService = new FavoriteService();
+                            var favoriteService = new FavoriteService();
                             await favoriteService.RemoveFavoriteAsync(CurrentUser.UserId, selectedSong.SongId);
-                            MessageBox.Show($"Bài hát '{selectedSong.Title}' đã được xóa khỏi danh sách yêu thích.",
-                                             "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
 
                             // Reload the Favorite List
                             FavoriteListBox.ItemsSource = null;
-                            await LoadFavoriteList();  // Reload updated favorite list
+                            await LoadFavoriteList();
                         }
-                    }
-                    else
-                    {
-                        MessageBox.Show("Không tìm thấy bài hát được chọn trong danh sách yêu thích.",
-                                         "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
                 else
                 {
-                    MessageBox.Show("Vui lòng chọn một bài hát từ playlist hoặc danh sách yêu thích.",
-                                     "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("Please select a song to delete.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
             catch (Exception ex)
             {
-                // Handle unexpected errors
-                MessageBox.Show($"Đã xảy ra lỗi khi xóa bài hát: {ex.Message}",
-                                 "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"An error occurred while deleting the song: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
+
+
 
 
 

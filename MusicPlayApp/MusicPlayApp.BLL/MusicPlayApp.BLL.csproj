@@ -7,9 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MusicPlayApp.DLL\MusicPlayApp.DLL.csproj">
-      <Private>True</Private>
-    </ProjectReference>
+    <ProjectReference Include="..\MusicPlayApp.DAL\MusicPlayApp.DAL.csproj" />
   </ItemGroup>
 
 </Project>

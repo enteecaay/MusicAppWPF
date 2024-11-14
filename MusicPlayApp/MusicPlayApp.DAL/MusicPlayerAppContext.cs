@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
-using MusicPlayApp.DLL.Entities;
+using MusicPlayApp.DAL.Entities;
 
-namespace MusicPlayApp.DLL;
+namespace MusicPlayApp.DAL;
 
 public partial class MusicPlayerAppContext : DbContext
 {

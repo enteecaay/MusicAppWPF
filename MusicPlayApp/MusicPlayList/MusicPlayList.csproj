@@ -19,13 +19,10 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="YoutubeExplode" Version="6.4.4" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MusicPlayApp.BLL\MusicPlayApp.BLL.csproj">
-      <Private>True</Private>
-    </ProjectReference>
+    <ProjectReference Include="..\MusicPlayApp.BLL\MusicPlayApp.BLL.csproj" />
   </ItemGroup>
 
   <ItemGroup>

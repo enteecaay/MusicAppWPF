@@ -1,6 +1,5 @@
-﻿using MusicPlayApp.DLL.Entities;
-using MusicPlayApp.DLL.Entities;
-using MusicPlayApp.DLL.Repository;
+﻿using MusicPlayApp.DAL.Entities;
+using MusicPlayApp.DAL.Repository;
 using System;
 
 namespace MusicPlayApp.BLL.Service

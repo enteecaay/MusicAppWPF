@@ -1,4 +1,4 @@
-﻿namespace MusicPlayApp.DLL
+﻿namespace MusicPlayApp.DAL
 {
     public class Class1
     {

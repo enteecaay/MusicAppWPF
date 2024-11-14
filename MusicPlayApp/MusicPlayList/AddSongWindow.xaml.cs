@@ -1,6 +1,6 @@
 ﻿using Microsoft.Win32;
 using MusicPlayApp.BLL.Service;
-using MusicPlayApp.DLL.Entities;
+using MusicPlayApp.DAL.Entities;
 using System.Windows;
 
 namespace MusicPlayList

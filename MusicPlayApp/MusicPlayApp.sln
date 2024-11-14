@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MusicPlayList", "MusicPlayL
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MusicPlayApp.BLL", "MusicPlayApp.BLL\MusicPlayApp.BLL.csproj", "{A24BA787-09AB-41BD-AC80-4120CC7B6810}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MusicPlayApp.DLL", "MusicPlayApp.DLL\MusicPlayApp.DLL.csproj", "{66F4B718-2081-41BD-9667-49F6E46C5C40}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MusicPlayApp.DAL", "MusicPlayApp.DAL\MusicPlayApp.DAL.csproj", "{66F4B718-2081-41BD-9667-49F6E46C5C40}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

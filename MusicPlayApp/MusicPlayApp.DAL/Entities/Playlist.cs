@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace MusicPlayApp.DLL.Entities;
+namespace MusicPlayApp.DAL.Entities;
 
 public partial class Playlist
 {

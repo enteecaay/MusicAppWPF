@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using MusicPlayApp.DLL.Entities;
+using MusicPlayApp.DAL.Entities;
 using System;
 using System.Linq;
 
-namespace MusicPlayApp.DLL.Repository
+namespace MusicPlayApp.DAL.Repository
 {
     public class UserRepo
     {

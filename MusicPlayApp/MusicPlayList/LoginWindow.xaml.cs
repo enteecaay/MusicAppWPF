@@ -1,8 +1,8 @@
 ﻿using MusicPlayApp.BLL.Service;
-using MusicPlayApp.DLL.Repository;
+using MusicPlayApp.DAL.Repository;
 using System.Windows;
-using MusicPlayApp.DLL;
-using MusicPlayApp.DLL.Entities;
+using MusicPlayApp.DAL;
+using MusicPlayApp.DAL.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace MusicPlayList
@@ -94,7 +94,7 @@ namespace MusicPlayList
                     return;
                 }
 
-                var newUser = new MusicPlayApp.DLL.Entities.User
+                var newUser = new MusicPlayApp.DAL.Entities.User
                 {
                     UserName = username,
                     Password = password

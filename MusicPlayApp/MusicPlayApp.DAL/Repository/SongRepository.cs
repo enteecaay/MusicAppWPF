@@ -1,12 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using MusicPlayApp.DLL.Entities;
+using MusicPlayApp.DAL.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MusicPlayApp.DLL.Repository
+namespace MusicPlayApp.DAL.Repository
 {
     public class SongRepository
     {

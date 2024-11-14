@@ -1,7 +1,7 @@
 ﻿using Microsoft.VisualBasic.ApplicationServices;
 using Microsoft.Win32;
 using MusicPlayApp.BLL.Service;
-using MusicPlayApp.DLL.Entities;
+using MusicPlayApp.DAL.Entities;
 using System.IO;
 using System.Text;
 using System.Windows;
@@ -40,11 +40,11 @@ namespace MusicPlayList
         private SongService _songService = new SongService();
 
 
-        public MusicPlayApp.DLL.Entities.User CurrentUser { get; set; }
+        public MusicPlayApp.DAL.Entities.User CurrentUser { get; set; }
 
         private bool isFullScreen = false; // Thêm biến theo dõi trạng thái full screen
 
-        public MainWindow(MusicPlayApp.DLL.Entities.User currentUser)
+        public MainWindow(MusicPlayApp.DAL.Entities.User currentUser)
         {
             InitializeComponent();
             CurrentUser = currentUser;

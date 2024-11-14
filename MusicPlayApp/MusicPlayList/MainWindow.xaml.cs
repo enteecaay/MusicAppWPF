@@ -453,27 +453,20 @@ namespace MusicPlayList
         }
 
 
-
-
-
-
-
         private async void DeleteBtn_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                // Stop and reset the media player
                 mediaPlayer.Stop();
-                timer?.Stop();  // Stop the timer to prevent any further updates
-                txtText.Text = "";  // Clear the song title display
-                mediaPlayer.Source = null;  // Clear the media source
+                timer?.Stop();
+                txtText.Text = "";
+                mediaPlayer.Source = null;
 
-                // Reset the timeline and progress bar
                 TimeCount.Value = 0;  // Reset progress slider to the start
                 currentTimeText.Text = "00:00";  // Display 00:00 as the current time
                 totalTimeText.Text = "00:00";  // Display 00:00 as the total time
 
-                // Handle deletion from Playlist
+                // Xử lý xóa từ Playlist
                 if (playlistListBox.SelectedItem != null)
                 {
                     FavoriteListBox.SelectedItem = null;  // Reset FavoriteListBox selection
@@ -483,14 +476,14 @@ namespace MusicPlayList
 
                     if (selectedSong != null)
                     {
-                        var result = MessageBox.Show($"Do you want to delete '{selectedSong.Title}' from the playlist?",
-                                                     "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                        var result = MessageBox.Show($"Bạn có chắc chắn muốn xóa '{selectedSong.Title}' khỏi danh sách phát?",
+                                                     "Xác nhận xóa", MessageBoxButton.YesNo, MessageBoxImage.Question);
 
                         if (result == MessageBoxResult.Yes)
                         {
-                            _songService.RemoveSong(selectedSong);  // Remove the song from the database
+                            _songService.RemoveSong(selectedSong);  // Xóa bài hát khỏi cơ sở dữ liệu
 
-                            // Reload Playlist and Favorite List to reflect the change
+                            // Tải lại Playlist và Favorite List để cập nhật thay đổi
                             playlistListBox.ItemsSource = null;
                             LoadTitleAllSongs();
                             FavoriteListBox.ItemsSource = null;
@@ -498,7 +491,7 @@ namespace MusicPlayList
                         }
                     }
                 }
-                // Handle deletion from Favorite List
+                // Xử lý xóa từ Favorite List
                 else if (FavoriteListBox.SelectedItem != null)
                 {
                     playlistListBox.SelectedItem = null;  // Reset playlistListBox selection
@@ -507,15 +500,15 @@ namespace MusicPlayList
 
                     if (selectedSong != null && CurrentUser != null)
                     {
-                        var result = MessageBox.Show($"Do you want to delete '{selectedSong.Title}' from your favorite list?",
-                                                     "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                        var result = MessageBox.Show($"Bạn có chắc chắn muốn xóa '{selectedSong.Title}' khỏi danh sách yêu thích?",
+                                                     "Xác nhận xóa", MessageBoxButton.YesNo, MessageBoxImage.Question);
 
                         if (result == MessageBoxResult.Yes)
                         {
                             var favoriteService = new FavoriteService();
                             await favoriteService.RemoveFavoriteAsync(CurrentUser.UserId, selectedSong.SongId);
 
-                            // Reload the Favorite List
+                            // Tải lại danh sách yêu thích
                             FavoriteListBox.ItemsSource = null;
                             await LoadFavoriteList();
                         }
@@ -523,21 +516,14 @@ namespace MusicPlayList
                 }
                 else
                 {
-                    MessageBox.Show("Please select a song to delete.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("Vui lòng chọn một bài hát để xóa.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"An error occurred while deleting the song: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Đã xảy ra lỗi khi xóa bài hát: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-
-
-
-
-
-
-
 
 
 

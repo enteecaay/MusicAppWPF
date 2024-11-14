@@ -5,9 +5,9 @@ VisualStudioVersion = 17.11.35222.181
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MusicPlayList", "MusicPlayList\MusicPlayList.csproj", "{9E78F197-8283-4B1B-91FC-87060BD7F62D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MusicPlayApp.BLL", "MusicPlayApp.BLL\MusicPlayApp.BLL.csproj", "{A24BA787-09AB-41BD-AC80-4120CC7B6810}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MusicPlayApp.BLL", "MusicPlayApp.BLL\MusicPlayApp.BLL.csproj", "{A24BA787-09AB-41BD-AC80-4120CC7B6810}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MusicPlayApp.DLL", "MusicPlayApp.DLL\MusicPlayApp.DLL.csproj", "{66F4B718-2081-41BD-9667-49F6E46C5C40}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MusicPlayApp.DLL", "MusicPlayApp.DLL\MusicPlayApp.DLL.csproj", "{66F4B718-2081-41BD-9667-49F6E46C5C40}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

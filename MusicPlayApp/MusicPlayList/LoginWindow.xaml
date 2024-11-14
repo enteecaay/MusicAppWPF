@@ -46,7 +46,7 @@
                     <TextBlock Text="Username" Foreground="#B3B3B3" Margin="0,0,0,5" FontSize="12" />
                     <Border Background="#282828">
                         <TextBox x:Name="UsernameTextBox" Height="40" FontSize="14" Padding="10,0,0,0" Background="#282828" Foreground="#EAEAEA"
-                                 BorderThickness="0" HorizontalAlignment="Stretch">
+                                 BorderThickness="0" HorizontalAlignment="Stretch" TabIndex="1">
                             <TextBox.Template>
                                 <ControlTemplate TargetType="TextBox">
                                     <Grid>
@@ -72,7 +72,7 @@
                     <TextBlock Text="Password" Foreground="#B3B3B3" Margin="0,0,0,5" FontSize="12" />
                     <Border Background="#282828">
                         <PasswordBox x:Name="PasswordBox" Height="40" FontSize="14" Padding="10,0,0,0" Background="#282828" Foreground="#EAEAEA"
-                                     BorderThickness="0" HorizontalAlignment="Stretch">
+                                     BorderThickness="0" HorizontalAlignment="Stretch" TabIndex="2">
                             <PasswordBox.Template>
                                 <ControlTemplate TargetType="PasswordBox">
                                     <Grid>
@@ -104,7 +104,7 @@
 
                     <!-- Login Button -->
                     <Button x:Name="LoginButton" Content="Login" Height="45" FontSize="14" Width="120" FontWeight="Bold" Foreground="#FF333333"
-                            Grid.Column="0" Click="LoginButton_Click">
+                            Grid.Column="0" Click="LoginButton_Click" TabIndex="3">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
                                 <Border x:Name="ButtonBorder" Background="#1DB954" BorderThickness="0">
@@ -121,7 +121,7 @@
 
                     <!-- Register Button -->
                     <Button x:Name="RegisterButton" Content="Register" Height="45" FontSize="14" Width="120" FontWeight="Bold" Foreground="#1DB954"
-                            Grid.Column="2" Click="RegisterButton_Click">
+                            Grid.Column="2" Click="RegisterButton_Click" TabIndex="4">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
                                 <Border x:Name="ButtonBorder" Background="#333333" BorderThickness="0">

@@ -130,7 +130,15 @@ namespace MusicPlayList
                 currentTimeText.Text = mediaPlayer.Position.ToString(@"mm\:ss");
                 totalTimeText.Text = mediaPlayer.NaturalDuration.TimeSpan.ToString(@"mm\:ss");
             }
+            else
+            {
+                // Đặt giá trị mặc định khi Duration chưa sẵn sàng
+                TimeCount.Value = 0;
+                currentTimeText.Text = "00:00";
+                totalTimeText.Text = "00:00";
+            }
         }
+
 
 
         private void ImportButton_Click(object sender, RoutedEventArgs e)
@@ -257,82 +265,100 @@ namespace MusicPlayList
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            if (playlistListBox.SelectedIndex < playlistListBox.Items.Count - 1)
+            if (isPlayingFromFavoriteList)
             {
-                 playlistListBox.SelectedIndex++;
-                if (playlistListBox.SelectedItem != null)
+                if (favoriteList.Count == 0)
                 {
-                    var selectedTitle = playlistListBox.SelectedItem.ToString();
-                    var selectedSong = playlist.FirstOrDefault(s => s.Title == selectedTitle);
-
-                    if (selectedSong != null)
-                    {
-                        var filePath = selectedSong.Album;
-
-                        // Check if the file exists
-                        if (File.Exists(filePath))
-                        {
-                            mediaPlayer.Source = new Uri(filePath);
-                            mediaPlayer.Play();
-                            timer.Start();
-                        }
-                        else
-                        {
-                            MessageBox.Show($"File not found: {filePath}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                        }
-                    }
-                    else
-                    {
-                        MessageBox.Show("Selected song not found in the playlist.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
+                    MessageBox.Show("Favorite list is empty.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
                 }
-                else
+
+                // Di chuyển đến bài tiếp theo trong favorite list
+                int currentIndex = FavoriteListBox.SelectedIndex;
+                FavoriteListBox.SelectedIndex = (currentIndex < favoriteList.Count - 1) ? currentIndex + 1 : 0;
+
+                PlaySelectedSong(favoriteList, FavoriteListBox);
+            }
+            else if (isPlayingFromPlaylist)
+            {
+                if (playlist.Count == 0)
                 {
-                    MessageBox.Show("Please select a song from the playlist.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("Playlist is empty.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
                 }
-                //mediaPlayer.Play();
-                //timer.Start();
+
+                // Di chuyển đến bài tiếp theo trong playlist
+                int currentIndex = playlistListBox.SelectedIndex;
+                playlistListBox.SelectedIndex = (currentIndex < playlist.Count - 1) ? currentIndex + 1 : 0;
+
+                PlaySelectedSong(playlist, playlistListBox);
             }
         }
+
 
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
-            if (playlistListBox.SelectedIndex > 0)
+            if (isPlayingFromFavoriteList)
             {
-                playlistListBox.SelectedIndex--;
-
-                if (playlistListBox.SelectedItem != null)
+                if (favoriteList.Count == 0)
                 {
-                    var selectedTitle = playlistListBox.SelectedItem.ToString();
-                    var selectedSong = playlist.FirstOrDefault(s => s.Title == selectedTitle);
+                    MessageBox.Show("Favorite list is empty.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
 
-                    if (selectedSong != null)
+                // Di chuyển đến bài trước đó trong favorite list
+                int currentIndex = FavoriteListBox.SelectedIndex;
+                FavoriteListBox.SelectedIndex = (currentIndex > 0) ? currentIndex - 1 : favoriteList.Count - 1;
+
+                PlaySelectedSong(favoriteList, FavoriteListBox);
+            }
+            else if (isPlayingFromPlaylist)
+            {
+                if (playlist.Count == 0)
+                {
+                    MessageBox.Show("Playlist is empty.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                // Di chuyển đến bài trước đó trong playlist
+                int currentIndex = playlistListBox.SelectedIndex;
+                playlistListBox.SelectedIndex = (currentIndex > 0) ? currentIndex - 1 : playlist.Count - 1;
+
+                PlaySelectedSong(playlist, playlistListBox);
+            }
+        }
+
+        private void PlaySelectedSong(List<Song> songList, ListBox listBox)
+        {
+            if (listBox.SelectedItem != null)
+            {
+                var selectedTitle = listBox.SelectedItem.ToString();
+                var selectedSong = songList.FirstOrDefault(s => s.Title == selectedTitle);
+
+                if (selectedSong != null)
+                {
+                    var filePath = selectedSong.Album;
+
+                    if (File.Exists(filePath))
                     {
-                        var filePath = selectedSong.Album;
-
-                        // Check if the file exists
-                        if (File.Exists(filePath))
-                        {
-                            mediaPlayer.Source = new Uri(filePath);
-                            mediaPlayer.Play();
-                            timer.Start();
-                        }
-                        else
-                        {
-                            MessageBox.Show($"File not found: {filePath}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                        }
+                        mediaPlayer.Source = new Uri(filePath);
+                        mediaPlayer.Play();
+                        timer.Start();
+                        txtText.Text = selectedSong.Title;
                     }
                     else
                     {
-                        MessageBox.Show("Selected song not found in the playlist.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show($"File not found: {filePath}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
-                else
-                {
-                    MessageBox.Show("Please select a song from the playlist.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
+              
+            }
+            else
+            {
+                MessageBox.Show("Please select a song from the list.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
+
 
         private void TimeCount_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {

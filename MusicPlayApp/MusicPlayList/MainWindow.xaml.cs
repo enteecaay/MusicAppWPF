@@ -211,20 +211,11 @@ namespace MusicPlayList
                 mediaPlayer.Play();
                 isPlaying = true;
                 PauseButton.Content = "Pause";
-                timer.Start(); // Start the timer to resume the rotation of the disc
+                timer.Start();
             }
         }
 
-        private void StopButton_Click(object sender, RoutedEventArgs e)
-        {
-            mediaPlayer.Stop();
-            if (timer != null)
-            {
-                timer.Stop();
-            }
-            TimeCount.Value = 0;
-            currentTimeText.Text = "00:00";
-        }
+     
 
         private void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {

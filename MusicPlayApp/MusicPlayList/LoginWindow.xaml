@@ -103,7 +103,7 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- Login Button -->
-                    <Button x:Name="LoginButton" Content="Login" Height="45" FontSize="14" Width="120" FontWeight="Bold"
+                    <Button x:Name="LoginButton" Content="Login" Height="45" FontSize="14" Width="120" FontWeight="Bold" Foreground="#FF333333"
                             Grid.Column="0" Click="LoginButton_Click">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
@@ -120,12 +120,12 @@
                     </Button>
 
                     <!-- Register Button -->
-                    <Button x:Name="RegisterButton" Content="Register" Height="45" FontSize="14" Width="120" FontWeight="Bold"
+                    <Button x:Name="RegisterButton" Content="Register" Height="45" FontSize="14" Width="120" FontWeight="Bold" Foreground="#1DB954"
                             Grid.Column="2" Click="RegisterButton_Click">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
                                 <Border x:Name="ButtonBorder" Background="#333333" BorderThickness="0">
-                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
                                 <ControlTemplate.Triggers>
                                     <Trigger Property="IsMouseOver" Value="True">

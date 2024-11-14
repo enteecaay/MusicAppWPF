@@ -397,8 +397,12 @@ namespace MusicPlayList
         {
             if (FavoriteListBox.SelectedItem != null)
             {
-                isPlayingFromFavoriteList = true;  // Mark as playing from Favorite List
-                isPlayingFromPlaylist = false;    // Stop playing from Playlist
+                // Reset the pause/play button state
+                isPlaying = false;
+                PauseButton.Content = "Play"; // Set to "Play" as initial state
+
+                isPlayingFromFavoriteList = true;
+                isPlayingFromPlaylist = false;
 
                 // Reset the previous selection
                 playlistListBox.SelectedItem = null;
@@ -415,28 +419,29 @@ namespace MusicPlayList
 
                         if (fileExtension == ".mp3" || fileExtension == ".wav")
                         {
-                            // Audio file: Show disk and play audio
-                            cdContainer.Visibility = Visibility.Visible;  // Show disk container
-                            CDImage.Visibility = Visibility.Visible;  // Show rotating disk
-                            mediaPlayer.Visibility = Visibility.Collapsed;  // Hide video player
-                            StartRotatingDisk();  // Start rotating disk
+                            cdContainer.Visibility = Visibility.Visible;
+                            CDImage.Visibility = Visibility.Visible;
+                            mediaPlayer.Visibility = Visibility.Collapsed;
+                            StartRotatingDisk();
 
-                            // Play the audio
                             mediaPlayer.Source = new Uri(album);
                             mediaPlayer.Play();
                             timer.Start();
+                            isPlaying = true;
+                            PauseButton.Content = "Pause";
                         }
                         else
                         {
-                            cdContainer.Visibility = Visibility.Collapsed;  // Hide disk container
-                            CDImage.Visibility = Visibility.Collapsed;  // Hide rotating disk
-                            mediaPlayer.Visibility = Visibility.Visible;  // Show video player
-                            StopRotatingDisk(); // Stop disk rotation
+                            cdContainer.Visibility = Visibility.Collapsed;
+                            CDImage.Visibility = Visibility.Collapsed;
+                            mediaPlayer.Visibility = Visibility.Visible;
+                            StopRotatingDisk();
 
-                            // Play the video or other media
                             mediaPlayer.Source = new Uri(album);
                             mediaPlayer.Play();
                             timer.Start();
+                            isPlaying = true;
+                            PauseButton.Content = "Pause";
                         }
                     }
                     else
@@ -446,6 +451,7 @@ namespace MusicPlayList
                 }
             }
         }
+
 
 
 
@@ -678,6 +684,10 @@ namespace MusicPlayList
         {
             if (playlistListBox.SelectedItem != null)
             {
+                // Reset the pause/play button state
+                isPlaying = false;
+                PauseButton.Content = "Play"; // Set to "Play" as initial state
+
                 isPlayingFromPlaylist = true;  // Mark as playing from Playlist
                 isPlayingFromFavoriteList = false;  // Stop playing from Favorite List
 
@@ -698,28 +708,30 @@ namespace MusicPlayList
                         if (fileExtension == ".mp3" || fileExtension == ".wav")
                         {
                             // Audio file: Show disk and play audio
-                            cdContainer.Visibility = Visibility.Visible;  // Show disk container
-                            CDImage.Visibility = Visibility.Visible;  // Show rotating disk
-                            mediaPlayer.Visibility = Visibility.Collapsed;  // Hide video player
-                            StartRotatingDisk();  // Start rotating disk
+                            cdContainer.Visibility = Visibility.Visible;
+                            CDImage.Visibility = Visibility.Visible;
+                            mediaPlayer.Visibility = Visibility.Collapsed;
+                            StartRotatingDisk();
 
-                            // Play the audio
                             mediaPlayer.Source = new Uri(album);
                             mediaPlayer.Play();
                             timer.Start();
+                            isPlaying = true; // Set playing to true as the song starts playing automatically
+                            PauseButton.Content = "Pause"; // Set the button to "Pause" as it's playing now
                         }
                         else
                         {
                             // Non-audio file (video): Show video and hide the disk
-                            cdContainer.Visibility = Visibility.Collapsed;  // Hide disk container
-                            CDImage.Visibility = Visibility.Collapsed;  // Hide rotating disk
-                            mediaPlayer.Visibility = Visibility.Visible;  // Show video player
-                            StopRotatingDisk(); // Stop disk rotation
+                            cdContainer.Visibility = Visibility.Collapsed;
+                            CDImage.Visibility = Visibility.Collapsed;
+                            mediaPlayer.Visibility = Visibility.Visible;
+                            StopRotatingDisk();
 
-                            // Play the video or other media
                             mediaPlayer.Source = new Uri(album);
                             mediaPlayer.Play();
                             timer.Start();
+                            isPlaying = true;
+                            PauseButton.Content = "Pause";
                         }
                     }
                     else
@@ -729,6 +741,7 @@ namespace MusicPlayList
                 }
             }
         }
+
 
 
         private void StopRotatingDisk()

@@ -1,19 +1,22 @@
 ﻿using Microsoft.Win32;
 using MusicPlayApp.BLL.Service;
 using MusicPlayApp.DAL.Entities;
+using MusicPlayApp.DAL.Repository;
 using System.Windows;
+using TagLib;
 
 namespace MusicPlayList
 {
     public partial class AddSongWindow : Window
     {
-        private SongService _songService = new();
+        private SongService _songService;
         public Song SelectedOne { get; set; }
         public List<Song> SelectedSongs { get; set; } = new List<Song>(); 
 
         public AddSongWindow()
         {
             InitializeComponent();
+            _songService = new SongService(new SongRepository());
             if(SelectedOne != null)
             {
                 TitleTextBox.Text = SelectedOne.Title;
@@ -24,9 +27,8 @@ namespace MusicPlayList
 
         }
 
-        public void SaveButton_Click(object sender, RoutedEventArgs e)
+        public async void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            
             // Retrieve the input values
             string title = TitleTextBox.Text;
             string artist = ArtistTextBox.Text;
@@ -36,17 +38,17 @@ namespace MusicPlayList
             {
                 // Update the song details
                 SelectedOne.Title = TitleTextBox.Text;
-                SelectedOne.Artist = ArtistTextBox.Text;
-                SelectedOne.Album = AlbumTextBox.Text;
+                SelectedOne.Artist = TitleTextBox.Text;
+                SelectedOne.Album = TitleTextBox.Text;
 
-                _songService.Update(SelectedOne);
+                await _songService.UpdateSongAsync(SelectedOne);
             }
             else if (SelectedSongs.Count > 1)
             {
-                    foreach (var songs in SelectedSongs)
-                    {
-                        _songService.AddSong(songs);
-                    }
+                foreach (var song in SelectedSongs)
+                {
+                    await _songService.AddSongAsync(song);
+                }
             }
             else
             {
@@ -57,13 +59,14 @@ namespace MusicPlayList
                     Artist = artist,
                     Album = albumFilePath
                 };
-                _songService.AddSong(newSong);
+                await _songService.AddSongAsync(newSong);
             }
 
             // Close the window
             this.DialogResult = true;
             this.Close();
         }
+
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
@@ -85,10 +88,12 @@ namespace MusicPlayList
             {
                 foreach (var fileName in openFileDialog.FileNames)
                 {
+                    var file = TagLib.File.Create(fileName);
+                    string artist = file.Tag.FirstPerformer ?? "Unknown Artist";
                     var newSong = new Song
                     {
                         Title = System.IO.Path.GetFileNameWithoutExtension(fileName),
-                        Artist = "Unknown Artist",
+                        Artist = artist,
                         Album = fileName
                     };
                     SelectedSongs.Add(newSong);
@@ -110,6 +115,10 @@ namespace MusicPlayList
                 }
                 else
                 {
+                    var file = TagLib.File.Create(openFileDialog.FileName);
+                    string artist = file.Tag.FirstPerformer ?? "Unknown Artist";
+                    TitleTextBox.Text = System.IO.Path.GetFileNameWithoutExtension(openFileDialog.FileName);
+                    ArtistTextBox.Text = SelectedSongs.First().Artist;
                     AlbumTextBox.Text = SelectedSongs.First().Album;
                 }
             }

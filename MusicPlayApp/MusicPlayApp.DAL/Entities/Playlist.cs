@@ -6,14 +6,7 @@ namespace MusicPlayApp.DAL.Entities;
 public partial class Playlist
 {
     public int PlaylistId { get; set; }
-
     public int UserId { get; set; }
-
-    public int? SongId { get; set; }
-
     public string PlaylistName { get; set; }
-
-    public virtual Song? Song { get; set; } 
-
-    public virtual User User { get; set; }
+    public List<int> SongIds { get; set; } = new List<int>();
 }

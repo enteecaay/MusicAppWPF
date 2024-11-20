@@ -7,11 +7,14 @@ namespace MusicPlayApp.BLL.Service
 {
     public class FavoriteService
     {
-        private FavoriteRepo _favoriteRepo;
+        private readonly FavoriteRepo _favoriteRepo;
+        private readonly SongRepository _songRepository;
 
-        public FavoriteService()
+
+        public FavoriteService(FavoriteRepo favoriteRepo, SongRepository songRepository)
         {
             _favoriteRepo = new FavoriteRepo();
+            _songRepository = new SongRepository();
         }
 
         public async Task AddFavoriteAsync(int userId, int songId, string listName)
@@ -26,7 +29,17 @@ namespace MusicPlayApp.BLL.Service
         }
         public async Task<List<Song>> GetFavoritesByUserIdAsync(int userId)
         {
-            return await _favoriteRepo.GetFavoritesByUserIdAsync(userId);
+            List<int?> songIdList = await _favoriteRepo.GetFavoritesByUserIdAsync(userId);
+            List<Song> songList = new List<Song>();
+            foreach (var songId in songIdList)
+            {
+                Song song = await _songRepository.GetSongByIdAsync(songId.Value);
+                if (song != null)
+                {
+                    songList.Add(song);
+                }
+            }
+            return songList;
         }
 
         public async Task RemoveFavoriteAsync(int userId, int songId)
@@ -34,6 +47,6 @@ namespace MusicPlayApp.BLL.Service
             FavoriteRepo favoriteRepo = new FavoriteRepo();
             await favoriteRepo.RemoveFavoriteAsync(userId, songId);
         }
-
+        
     }
 }

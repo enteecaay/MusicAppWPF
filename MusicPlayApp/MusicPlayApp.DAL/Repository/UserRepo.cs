@@ -1,74 +1,67 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MusicPlayApp.DAL.Entities;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace MusicPlayApp.DAL.Repository
 {
     public class UserRepo
     {
-        private readonly MusicPlayerAppContext _context;
-
-        // Inject DbContext qua constructor để quản lý vòng đời của nó
-        public UserRepo(MusicPlayerAppContext context)
-        {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-        }
+        private const string FileName = "users.json";
 
         // Lấy người dùng bằng Id
-        public User GetUserById(int id)
+
+        private int GetNextId(List<User> users)
         {
-            return _context.Users
-                           .Include(u => u.Playlists)
-                           .Include(u => u.FavoriteLists)
-                           .FirstOrDefault(u => u.UserId == id);
+            return users.Any() ? users.Max(u => u.UserId) + 1 : 1;
+        }
+
+
+        public async Task<List<User>> GetAllUsersAsync()
+        {
+            return await JsonDatabase.ReadAsync<User>(FileName);
+        }
+        public async Task<User> GetUserByIdAsync(int id)
+        {
+            var users = await JsonDatabase.ReadAsync<User>(FileName);
+            return users.FirstOrDefault(u => u.UserId == id);
         }
 
         // Lấy người dùng bằng Username
-        public User GetUserByUsername(string username)
+        public async Task<User> GetUserByUsernameAsync(string username)
         {
-            if (_context == null || _context.Users == null)
-            {
-                throw new InvalidOperationException("Database context or Users collection is not initialized.");
-            }
-
-            return _context.Users
-                           .Include(u => u.Playlists)
-                           .Include(u => u.FavoriteLists)
-                           .FirstOrDefault(u => u.UserName == username);
+            var users = await JsonDatabase.ReadAsync<User>(FileName);
+            return users.FirstOrDefault(u => u.UserName == username);
         }
 
         // Thêm người dùng mới
-        public void AddUser(User user)
+
+        public async Task AddUserAsync(User user)
         {
-            if (user == null)
-                throw new ArgumentNullException(nameof(user), "User cannot be null.");
-
-            var existingUser = _context.Users.FirstOrDefault(u => u.UserName == user.UserName);
+            user.UserId = GetNextId(await JsonDatabase.ReadAsync<User>(FileName));
+            var users = await JsonDatabase.ReadAsync<User>(FileName);
+            var existingUser = users.FirstOrDefault(u => u.UserName == user.UserName);
             if (existingUser != null)
+            {
                 throw new InvalidOperationException("A user with this username already exists.");
-
-            try
-            {
-                _context.Users.Add(user);
-                _context.SaveChanges();
             }
-            catch (Exception ex)
-            {
-                throw new Exception("An error occurred while saving the user. Inner exception: " + ex.InnerException?.Message, ex);
-            }
+            users.Add(user);
+            await JsonDatabase.WriteAsync(FileName, users);
         }
 
         // Kiểm tra thông tin đăng nhập
         public bool ValidateUser(string username, string password)
         {
-            var user = _context.Users.FirstOrDefault(u => u.UserName == username && u.Password == password);
-            return user != null;
+            var users = JsonDatabase.ReadAsync<User>(FileName).Result;
+            return users.Any(u => u.UserName == username && u.Password == password);
         }
 
-        public User Authenticate(string username, string password)
+        public async Task<User> AuthenticateAsync(string username, string password)
         {
-            return _context.Users.FirstOrDefault(u => u.UserName == username && u.Password == password);
+            var users = await JsonDatabase.ReadAsync<User>(FileName);
+            return users.FirstOrDefault(u => u.UserName.ToLower() == username.ToLower() && u.Password == password);
         }
     }
 }

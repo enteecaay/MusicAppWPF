@@ -1,82 +1,72 @@
-﻿using Microsoft.EntityFrameworkCore;
-using MusicPlayApp.DAL.Entities;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using MusicPlayApp.DAL.Entities;
 
 namespace MusicPlayApp.DAL.Repository
 {
     public class SongRepository
     {
-        private MusicPlayerAppContext _context;
+        private const string FileName = "songs.json";
 
         public async Task<List<Song>> GetAllSongsAsync()
         {
-            _context = new MusicPlayerAppContext();
-            return await _context.Songs
-                .Include(s => s.FavoriteLists)
-                .Include(s => s.Playlists)
-                .ThenInclude(p => p.User)
-                .ToListAsync();
+            return await JsonDatabase.ReadAsync<Song>(FileName);
         }
 
         public async Task<List<Song>> GetSongsByUserIdAsync(int userId)
         {
-            _context = new MusicPlayerAppContext();
-            return await _context.Songs
-                .Include(s => s.FavoriteLists)
-                .Include(s => s.Playlists)
-                .ThenInclude(p => p.User)
-                .Where(s => s.Playlists.Any(p => p.UserId == userId))
-                .ToListAsync();
+            var songs = await JsonDatabase.ReadAsync<Song>(FileName);
+            var playlists = await JsonDatabase.ReadAsync<Playlist>("playlists.json");
 
+            return songs.Where(s => playlists.Any(p => p.UserId == userId && p.SongIds.Contains(s.SongId ?? 0))).ToList();
         }
 
-        public void AddSong(Song song)
+
+        private int GetNextId(List<Song> songs)
         {
-            _context = new();
-            _context.Songs.Add(song);
-            _context.SaveChanges();
+            return songs.Any() ? (songs.Max(s => s.SongId) ?? 0) + 1 : 1;
+        }
+        public async Task AddSongAsync(Song song)
+        {
+            song.SongId = GetNextId(await JsonDatabase.ReadAsync<Song>(FileName));
+            var songs = await JsonDatabase.ReadAsync<Song>(FileName);
+            songs.Add(song);
+            await JsonDatabase.WriteAsync(FileName, songs);
         }
 
-        public void Update(Song song)
+        public async Task UpdateSongAsync(Song song)
         {
-            _context = new();
-            _context.Songs.Update(song);
-            _context.SaveChanges();
-        }
-
-        public void Remove(Song song)
-        {
-            if (song == null)
-            {
-                throw new ArgumentNullException(nameof(song), "The song cannot be null.");
-            }
-
-            _context = new();
-
-            // Xóa các mục liên quan trong bảng FavoriteLists
-            var relatedFavorites = _context.FavoriteLists.Where(f => f.SongId == song.SongId).ToList();
-            _context.FavoriteLists.RemoveRange(relatedFavorites);
-
-            // Xóa bài hát
-            var existingSong = _context.Songs.Find(song.SongId);
+            var songs = await JsonDatabase.ReadAsync<Song>(FileName);
+            var existingSong = songs.FirstOrDefault(s => s.SongId == song.SongId);
             if (existingSong != null)
             {
-                _context.Songs.Remove(existingSong);
-                _context.SaveChanges();
-            }
-            else
-            {
-                throw new Exception("The song does not exist in the database.");
+                songs.Remove(existingSong);
+                songs.Add(song);
+                await JsonDatabase.WriteAsync(FileName, songs);
             }
         }
+        public async Task RemoveSongAsync(Song song)
+        {
+            var songs = await JsonDatabase.ReadAsync<Song>(FileName);
+            var existingSong = songs.FirstOrDefault(s => s.SongId == song.SongId);
+            if (existingSong != null)
+            {
+                songs.Remove(existingSong);
+                await JsonDatabase.WriteAsync(FileName, songs);
+            }
+        }
+        public async Task<Song> GetSongByIdAsync(int id)
+        {
+            var songs = await JsonDatabase.ReadAsync<Song>(FileName);
+            return songs.FirstOrDefault(s => s.SongId == id);
+        }
 
-
-
-
+        public async Task<List<Song>> SearchSongsAsync(string query)
+        {
+            var songs = await JsonDatabase.ReadAsync<Song>(FileName);
+            return songs.Where(s => s.Title.ToLower().Contains(query) || s.Artist.ToLower().Contains(query)).ToList();
+        }
 
     }
 }

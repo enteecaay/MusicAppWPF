@@ -25,5 +25,26 @@
 			<PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
 			<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.1" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Update="JsonDatabase.cs">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="JsonDatabase\favoriteLists.json">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="JsonDatabase\playlists.json">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="JsonDatabase\songs.json">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="JsonDatabase\users.json">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
 	
 </Project>

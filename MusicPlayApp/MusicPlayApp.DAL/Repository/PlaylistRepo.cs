@@ -1,34 +1,44 @@
 ﻿using MusicPlayApp.DAL.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MusicPlayApp.DAL.Repository
 {
     public class PlaylistRepo
     {
-        private MusicPlayerAppContext _context;
-        public void Create(FavoriteList obj)
+        private const string FileName = "playlists.json";
+
+        public async Task CreateAsync(Playlist playlist)
         {
-            _context = new MusicPlayerAppContext();
-            _context.FavoriteLists.Add(obj);
-            _context.SaveChanges();
+            var playlists = await JsonDatabase.ReadAsync<Playlist>(FileName);
+            playlists.Add(playlist);
+            await JsonDatabase.WriteAsync(FileName, playlists);
         }
 
-        public void AddSongToFavoriteList(int songId, int FavoriteListId)
+        public async Task AddSongToPlaylistAsync(int songId, int playlistId)
         {
-            _context = new MusicPlayerAppContext();
-            var playlist = _context.Playlists.Find(FavoriteListId);
-            var song = _context.Songs.Find(songId);
-            playlist.Song = song;
-            _context.SaveChanges();
+            var playlists = await JsonDatabase.ReadAsync<Playlist>(FileName);
+            var playlist = playlists.FirstOrDefault(p => p.PlaylistId == playlistId);
+            if (playlist != null)
+            {
+                playlist.SongIds.Add(songId);
+                await JsonDatabase.WriteAsync(FileName, playlists);
+            }
         }
-        public FavoriteList GetFavoriteListByUserId(int userId)
+
+        public async Task<List<Playlist>> GetPlaylistsByUserIdAsync(int userId)
         {
-            _context = new MusicPlayerAppContext();
-            return _context.FavoriteLists.FirstOrDefault(f => f.UserId == userId);
+            var playlists = await JsonDatabase.ReadAsync<Playlist>(FileName);
+            return playlists.Where(p => p.UserId == userId).ToList();
+        }
+
+        public async Task RemoveSongFromPlaylistAsync(int songId, int playlistId)
+        {
+            var playlists = await JsonDatabase.ReadAsync<Playlist>(FileName);
+            var playlist = playlists.FirstOrDefault(p => p.PlaylistId == playlistId);
+            if (playlist != null)
+            {
+                playlist.SongIds.Remove(songId);
+                await JsonDatabase.WriteAsync(FileName, playlists);
+            }
         }
     }
 }

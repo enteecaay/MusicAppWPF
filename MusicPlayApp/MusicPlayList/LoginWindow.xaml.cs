@@ -10,22 +10,16 @@ namespace MusicPlayList
     public partial class LoginWindow : Window
     {
         private UserService _userService;
-        private PlaylistService _playlistService = new PlaylistService();
         // Constructor for XAML to initialize LoginWindow
         public LoginWindow()
         {
             InitializeComponent();
-
-            // Initialize MusicPlayListDbContext
-            var context = new MusicPlayerAppContext();
-
-            // Initialize UserRepo and UserService
-            var userRepo = new UserRepo(context); // Initialize UserRepo with context
-            _userService = new UserService(userRepo);
+            _userService = new UserService(new UserRepo());
         }
 
-        private void LoginButton_Click(object sender, RoutedEventArgs e)
+        private async void LoginButton_Click(object sender, RoutedEventArgs e)
         {
+
             string username = UsernameTextBox.Text.Trim();
             string password = PasswordBox.Password;
 
@@ -39,18 +33,18 @@ namespace MusicPlayList
             try
             {
                 // Gọi hàm Validate để kiểm tra tài khoản
-                bool isValidUser = _userService.ValidateUser(username, password);
+                bool isValidUser = await _userService.ValidateUserAsync(username, password);
 
                 if (isValidUser)
                 {
+                    User loggedInUser = await _userService.AuthenticateAsync(username, password);
                     // Gọi hàm Authenticate để lấy thông tin người dùng
-                    User loggedInUser = _userService.Authenticate(username, password);
 
                     if (loggedInUser != null)
                     {
-
                         // Khởi tạo MainWindow và truyền thông tin người dùng
                         MainWindow mainWindow = new MainWindow(loggedInUser);
+                        mainWindow.CurrentUser = loggedInUser;
                         mainWindow.Show();
 
                         // Đóng LoginWindow
@@ -69,11 +63,12 @@ namespace MusicPlayList
             catch (Exception ex)
             {
                 MessageBox.Show($"Đã xảy ra lỗi khi đăng nhập: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            }          
+           
         }
 
 
-        private void RegisterButton_Click(object sender, RoutedEventArgs e)
+        private async void RegisterButton_Click(object sender, RoutedEventArgs e)
         {
             string username = UsernameTextBox.Text.Trim();
             string password = PasswordBox.Password;
@@ -86,7 +81,7 @@ namespace MusicPlayList
 
             try
             {
-                var existingUser = _userService.GetUserByUsername(username);
+                var existingUser = await _userService.GetUserByUsernameAsync(username);
                 if (existingUser != null)
                 {
                     MessageBox.Show("Tên đăng nhập đã tồn tại. Vui lòng chọn tên đăng nhập khác.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -99,23 +94,9 @@ namespace MusicPlayList
                     Password = password
                 };
 
-                _userService.AddUser(newUser);
+                await _userService.AddUserAsync(newUser);
                 MessageBox.Show("Đăng ký thành công! Bạn có thể đăng nhập ngay bây giờ.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
-                User registerUser = _userService.Authenticate(username, password);
-                FavoriteList favoriteList = new FavoriteList
-                {
-                    UserId = registerUser.UserId,
-                    ListName = $"{username}"
-                };
-                try
-                {
-                    _playlistService.Create(favoriteList);
-                }
-                catch (DbUpdateException ex)
-                {
-                    var innerException = ex.InnerException?.Message;
-                    MessageBox.Show($"Đã xảy ra lỗi khi tạo playlist: {innerException}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
+                User registerUser = await _userService.AuthenticateAsync(username, password);
                 UsernameTextBox.Clear();
                 PasswordBox.Clear();
             }

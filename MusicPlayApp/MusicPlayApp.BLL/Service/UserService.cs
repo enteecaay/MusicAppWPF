@@ -1,6 +1,7 @@
 ﻿using MusicPlayApp.DAL.Entities;
 using MusicPlayApp.DAL.Repository;
 using System;
+using System.Threading.Tasks;
 
 namespace MusicPlayApp.BLL.Service
 {
@@ -8,42 +9,55 @@ namespace MusicPlayApp.BLL.Service
     {
         private readonly UserRepo _userRepo;
 
-        // Inject UserRepo thông qua constructor
+        // Inject UserRepo through constructor
         public UserService(UserRepo userRepo)
         {
             _userRepo = userRepo ?? throw new ArgumentNullException(nameof(userRepo));
         }
 
-        // Lấy người dùng bằng Id
-        public User GetUserById(int id)
+        // Get user by Id
+        public async Task<User> GetUserByIdAsync(int id)
         {
-            return _userRepo.GetUserById(id);
+            return await _userRepo.GetUserByIdAsync(id);
         }
 
-        // Lấy người dùng bằng Username
-        public User GetUserByUsername(string username)
+        // Get user by Username
+        public async Task<User> GetUserByUsernameAsync(string username)
         {
-            return _userRepo.GetUserByUsername(username);
+            return await _userRepo.GetUserByUsernameAsync(username);
         }
 
-        // Thêm người dùng mới
-        public void AddUser(User user)
+        // Add new user
+        public async Task AddUserAsync(User user)
         {
+            await _userRepo.AddUserAsync(user);
+        }
+
+        // Validate user credentials
+        public async Task<bool> ValidateUserAsync(string username, string password)
+        {
+            var user = await _userRepo.GetUserByUsernameAsync(username);
+            if (user == null || user.Password != password)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public async Task<User> AuthenticateAsync(string username, string password)
+        {
+            var user = await _userRepo.GetUserByUsernameAsync(username);
             if (user == null)
-                throw new ArgumentNullException(nameof(user), "User cannot be null.");
-
-            _userRepo.AddUser(user);
-        }
-
-        // Kiểm tra thông tin đăng nhập
-        public bool ValidateUser(string username, string password)
-        {
-            return _userRepo.ValidateUser(username, password);
-        }
-
-        public User Authenticate(string username, string password)
-        {
-            return _userRepo.Authenticate(username, password);
+            {
+                Console.WriteLine("User not found.");
+                return null;
+            }
+            if (user.Password != password)
+            {
+                Console.WriteLine("Password does not match.");
+                return null;
+            }
+            return user;
         }
     }
 }

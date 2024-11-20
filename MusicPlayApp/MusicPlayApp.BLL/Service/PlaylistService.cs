@@ -1,32 +1,35 @@
 ﻿using MusicPlayApp.DAL.Entities;
 using MusicPlayApp.DAL.Repository;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MusicPlayApp.BLL.Service
 {
     public class PlaylistService
     {
-        private PlaylistRepo _playlistRepo = new();
-        private SongRepository _songRepository = new();
-        public void Create(FavoriteList favoriteList)
-        {
-            _playlistRepo.Create(favoriteList);
-        }
-    
+        private readonly PlaylistRepo _playlistRepo;
 
-        public FavoriteList GetFavoriteListByUserIdService(int userId)
+        public PlaylistService(PlaylistRepo playlistRepo)
         {
-            return _playlistRepo.GetFavoriteListByUserId(userId);
+            _playlistRepo = playlistRepo ?? throw new ArgumentNullException(nameof(playlistRepo));
         }
 
-        public void AddSongToFavoriteListService(int songId, int FavoriteListId)
+        public async Task CreateAsync(Playlist playlist)
         {
+            await _playlistRepo.CreateAsync(playlist);
+        }
 
+        public async Task<List<Playlist>> GetPlaylistsByUserIdAsync(int userId)
+        {
+            return await _playlistRepo.GetPlaylistsByUserIdAsync(userId);
+        }
+
+        public async Task AddSongToPlaylistAsync(int songId, int playlistId)
+        {
+            await _playlistRepo.AddSongToPlaylistAsync(songId, playlistId);
+        }
+
+        public async Task RemoveSongFromPlaylistAsync(int songId, int playlistId)
+        {
+            await _playlistRepo.RemoveSongFromPlaylistAsync(songId, playlistId);
         }
     }
-
 }

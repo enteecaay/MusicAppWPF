@@ -3,31 +3,30 @@ using MusicPlayApp.DAL.Entities;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace MusicPlayApp.DAL.Repository
 {
     public class FavoriteRepo
     {
-        private MusicPlayerAppContext _context;
-
-        public FavoriteRepo()
-        {
-            _context = new MusicPlayerAppContext();
-        }
-
+        private const string FileName = "favoriteLists.json";
+        //private int GetNextId(List<FavoriteList> favoritelists)
+        //{
+        //    return favoritelists.Any() ? (favoritelists.Max(f => f.FavoriteListId) ?? 0) + 1 : 1;
+        //}
         public async Task AddFavoriteAsync(int userId, int songId, string listName)
         {
-            // Kiểm tra xem bài hát đã tồn tại trong danh sách yêu thích của người dùng chưa
-            var existingFavorite = await _context.FavoriteLists
-                                                 .FirstOrDefaultAsync(f => f.UserId == userId && f.SongId == songId);
+            var favoriteLists = await JsonDatabase.ReadAsync<FavoriteList>(FileName);
 
+            var existingFavorite = favoriteLists.FirstOrDefault(f => f.UserId == userId && f.SongId == songId);
             if (existingFavorite != null)
             {
-                // Nếu bài hát đã có trong danh sách yêu thích, ném lỗi
                 throw new InvalidOperationException("This song is already in your favorite list.");
             }
 
-            // Nếu chưa có, tiếp tục thêm bài hát vào danh sách yêu thích
             var favorite = new FavoriteList
             {
                 UserId = userId,
@@ -35,38 +34,40 @@ namespace MusicPlayApp.DAL.Repository
                 ListName = listName
             };
 
-            _context.FavoriteLists.Add(favorite);
-            await _context.SaveChangesAsync();
+            favoriteLists.Add(favorite);
+            await JsonDatabase.WriteAsync(FileName, favoriteLists);
         }
 
         // Kiểm tra xem bài hát đã có trong danh sách yêu thích của người dùng chưa
         public async Task<FavoriteList> GetFavoriteByUserIdAndSongIdAsync(int userId, int songId)
         {
-            return await _context.FavoriteLists
-                .FirstOrDefaultAsync(f => f.UserId == userId && f.SongId == songId);
+            var favoriteLists = await JsonDatabase.ReadAsync<FavoriteList>(FileName);
+            return favoriteLists.FirstOrDefault(f => f.UserId == userId && f.SongId == songId);
         }
 
 
-        public async Task<List<Song>> GetFavoritesByUserIdAsync(int userId)
+        public async Task<List<int?>> GetFavoritesByUserIdAsync(int userId)
         {
-            return await _context.FavoriteLists
-                .Include(f => f.Song)
+            var favoriteLists = await JsonDatabase.ReadAsync<FavoriteList>(FileName);
+            return favoriteLists
                 .Where(f => f.UserId == userId)
-                .Select(f => f.Song) // Lấy bài hát liên quan
-                .ToListAsync();
+                .Select(f => f.SongId)
+                .ToList();
         }
 
         public async Task RemoveFavoriteAsync(int userId, int songId)
         {
+
             // Tìm mục yêu thích dựa trên UserId và SongId
-            var favorite = await _context.FavoriteLists
-                .FirstOrDefaultAsync(f => f.UserId == userId && f.SongId == songId);
+            var favoriteLists = await JsonDatabase.ReadAsync<FavoriteList>(FileName);
+            var favorite = favoriteLists.FirstOrDefault(f => f.UserId == userId && f.SongId == songId);
 
             if (favorite != null)
             {
                 // Xóa mục khỏi FavoriteLists
-                _context.FavoriteLists.Remove(favorite);
-                await _context.SaveChangesAsync(); // Lưu thay đổi vào cơ sở dữ liệu
+                favoriteLists.Remove(favorite);
+                await JsonDatabase.WriteAsync(FileName, favoriteLists);
+                // Lưu thay đổi vào cơ sở dữ liệu
             }
         }
     }

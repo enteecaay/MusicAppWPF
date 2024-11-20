@@ -156,11 +156,24 @@
                              Margin="20,15"/>
                 </Border>
 
-                <StackPanel DockPanel.Dock="Bottom" Margin="15">
+                <StackPanel DockPanel.Dock="Bottom" Margin="12" Width="230">
+                    <StackPanel Orientation="Horizontal" Width="220">
+                        <TextBox x:Name="SearchBox" 
+                             Background="#282828"
+                             Foreground="White" 
+                             BorderThickness="0.5"
+                             Padding="15,5"
+                             Margin="0,0,0,0"
+                             TextChanged="SearchBox_TextChanged"
+                             BorderBrush="DarkKhaki" Width="188"/>
+                        <Image Source="search_icon.png" Width="25" Height="25" Margin="5,0,5,0"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
                     <Button Content="Import Music" Style="{StaticResource ModernButton}"
                             Click="ImportButton_Click"/>
                     <Button Content="Update Music" Style="{StaticResource ModernButton}"
-                            x:Name="UpdateButton" Click="UpdateButton_Click"/>
+                            x:Name="UpdateButton" Click="UpdateButton_Click" Width="107"/>
+                    </StackPanel>
                     <Button x:Name="Logout" Content="Logout" Background="#ff0000" Style="{StaticResource ModernButton}" Click="Logout_Click"
                     />
                 </StackPanel>
@@ -218,7 +231,7 @@
                                Stretch="Uniform"
                                Width="260" Height="260">
                                     <Image.Source>
-                                        <BitmapImage UriSource="https://cdn-icons-png.flaticon.com/512/4910/4910593.png"/>
+                                        <BitmapImage UriSource="pack://application:,,,/discimage.png"/>
                                     </Image.Source>
                                     <Image.RenderTransform>
                                         <RotateTransform x:Name="rotateTransform" 

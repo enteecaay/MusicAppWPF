@@ -2,6 +2,7 @@
 using Microsoft.Win32;
 using MusicPlayApp.BLL.Service;
 using MusicPlayApp.DAL.Entities;
+using MusicPlayApp.DAL.Repository;
 using System.IO;
 using System.Text;
 using System.Windows;
@@ -14,7 +15,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
-using System.Windows.Media.Animation; // Để sử dụng DoubleAnimation
+using System.Windows.Media.Animation;
+using Microsoft.Identity.Client.NativeInterop; // Để sử dụng DoubleAnimation
 
 
 
@@ -32,13 +34,10 @@ namespace MusicPlayList
         private string[] files;
         private string[] paths;
 
-
-
-
-
-
-        private SongService _songService = new SongService();
-
+        private readonly SongService _songService;
+        private readonly PlaylistService _playlistService;
+        private readonly UserService _userService;
+        private readonly FavoriteService _favoriteService;
 
         public MusicPlayApp.DAL.Entities.User? CurrentUser { get; set; }
 
@@ -59,9 +58,28 @@ namespace MusicPlayList
             this.KeyDown += Window_KeyDown; // Thêm xử lý phím ESC
             volumeSlider.Value = 100;
             VolumeText.Text = "100%";
+
+            // Initialize repositories
+            var songRepository = new SongRepository();
+            var playlistRepo = new PlaylistRepo();
+            var userRepo = new UserRepo();
+            var favoriteRepo = new FavoriteRepo();
+
+            // Initialize services
+            _songService = new SongService(songRepository);
+            _playlistService = new PlaylistService(playlistRepo);
+            _userService = new UserService(userRepo);
+            _favoriteService = new FavoriteService(favoriteRepo, songRepository);
+
             LoadTitleAllSongs();
             InitializeFavoriteList();
+            LoadFavoriteList();
+
+            // Initialize other components
+            InitializeTimer();
+            LoadPlaylist();
         }
+
 
         // Xử lý double click bằng đếm thời gian giữa các lần click
         private DateTime lastClick = DateTime.MinValue;
@@ -85,10 +103,9 @@ namespace MusicPlayList
                 if (CurrentUser != null)
                 {
                     int userId = CurrentUser.UserId;
-                    FavoriteService favoriteService = new FavoriteService();
 
                     // Get the list of favorite songs
-                    var favoriteSongs = await favoriteService.GetFavoritesByUserIdAsync(userId);
+                    var favoriteSongs = await _favoriteService.GetFavoritesByUserIdAsync(userId);
 
                     // Populate the favoriteList with the fetched songs
                     favoriteList = favoriteSongs;
@@ -141,12 +158,12 @@ namespace MusicPlayList
 
 
 
-        private void ImportButton_Click(object sender, RoutedEventArgs e)
+        private async void ImportButton_Click(object sender, RoutedEventArgs e)
         {
             AddSongWindow addSong = new AddSongWindow();
             addSong.ShowDialog();
-            LoadTitleAllSongs();
-
+            // Refresh the list
+            await LoadTitleAllSongs();
         }
 
         private bool isPlaying = true;
@@ -310,7 +327,7 @@ namespace MusicPlayList
                         mediaPlayer.Source = new Uri(filePath);
                         mediaPlayer.Play();
                         timer.Start();
-                        txtText.Text = selectedSong.Title;
+                        txtText.Text = $"{selectedSong.Title}  {selectedSong.Artist}";
                     }
                     else
                     {
@@ -379,7 +396,7 @@ namespace MusicPlayList
                 if (selectedSong != null)
                 {
                     var album = selectedSong.Album;
-                    txtText.Text = selectedSong.Title;
+                    txtText.Text = $"{selectedSong.Title}  {selectedSong.Artist}";
 
                     if (File.Exists(album))
                     {
@@ -449,7 +466,7 @@ namespace MusicPlayList
 
                         if (result == MessageBoxResult.Yes)
                         {
-                            _songService.RemoveSong(selectedSong);  // Xóa bài hát khỏi cơ sở dữ liệu
+                            _songService.RemoveSongAsync(selectedSong);  // Xóa bài hát khỏi cơ sở dữ liệu
 
                             // Tải lại Playlist và Favorite List để cập nhật thay đổi
                             playlistListBox.ItemsSource = null;
@@ -473,8 +490,7 @@ namespace MusicPlayList
 
                         if (result == MessageBoxResult.Yes)
                         {
-                            var favoriteService = new FavoriteService();
-                            await favoriteService.RemoveFavoriteAsync(CurrentUser.UserId, selectedSong.SongId);
+                            await _favoriteService.RemoveFavoriteAsync(CurrentUser.UserId, selectedSong.SongId.Value);
 
                             // Tải lại danh sách yêu thích
                             FavoriteListBox.ItemsSource = null;
@@ -499,63 +515,70 @@ namespace MusicPlayList
         {
             if (playlistListBox.SelectedItem != null)
             {
-                // Lấy bài hát được chọn
+                // Get the selected song title
                 var selectedTitle = playlistListBox.SelectedItem.ToString();
                 var selectedSong = playlist.FirstOrDefault(s => s.Title == selectedTitle);
 
                 if (selectedSong != null)
                 {
-                    int songId = selectedSong.SongId;
-
-                    // Kiểm tra người dùng hiện tại
-                    if (CurrentUser != null)
+                    if (selectedSong.SongId.HasValue)
                     {
-                        int userId = CurrentUser.UserId; // Lấy UserId từ người dùng đã đăng nhập
+                        int songId = (int)selectedSong.SongId;
+                        Console.WriteLine($"Song ID: {songId}");
 
-                        try
+                        // Check the current user
+                        if (CurrentUser != null)
                         {
-                            // Kiểm tra xem bài hát đã có trong danh sách yêu thích của người dùng chưa
-                            var favoriteService = new FavoriteService();
-                            var existingFavorite = await favoriteService.CheckIfFavoriteExistsAsync(userId, songId);
+                            int userId = CurrentUser.UserId; // Get UserId from the logged-in user
 
-                            if (existingFavorite)
+                            try
                             {
-                                // Nếu bài hát đã có trong danh sách yêu thích, thông báo cho người dùng
-                                MessageBox.Show("Bài hát này đã có trong danh sách yêu thích của bạn.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                                // Check if the song is already in the user's favorite list
+                                var existingFavorite = await _favoriteService.CheckIfFavoriteExistsAsync(userId, songId);
+
+                                if (existingFavorite)
+                                {
+                                    // If the song is already in the favorite list, notify the user
+                                    MessageBox.Show("This song is already in your favorite list.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                                }
+                                else
+                                {
+                                    // Call service to add the song to the favorite list
+                                    await _favoriteService.AddFavoriteAsync(userId, songId, "My Favorite List");
+                                    // Reload the favorite list
+                                    await LoadFavoriteList();
+
+                                    MessageBox.Show("The song has been added to your favorite list.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                                }
                             }
-                            else
+                            catch (Exception ex)
                             {
-                                // Gọi service để thêm bài hát vào danh sách yêu thích
-                                await favoriteService.AddFavoriteAsync(userId, songId, "Danh sách yêu thích của tôi");
-
-                                // Load lại danh sách yêu thích
-                                await LoadFavoriteList();
-
-                                MessageBox.Show("Bài hát đã được thêm vào danh sách yêu thích.", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                                // Handle any errors
+                                MessageBox.Show($"An error occurred while adding the song to the favorite list: {ex.Message}",
+                                                "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                             }
                         }
-                        catch (Exception ex)
+                        else
                         {
-                            // Xử lý lỗi nếu có
-                            MessageBox.Show($"Đã xảy ra lỗi khi thêm bài hát vào danh sách yêu thích: {ex.Message}",
-                                            "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                            MessageBox.Show("Please log in to add songs to your favorite list.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                         }
                     }
                     else
                     {
-                        MessageBox.Show("Vui lòng đăng nhập để thêm bài hát vào danh sách yêu thích.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show("The selected song does not have a valid ID.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
                 else
                 {
-                    MessageBox.Show("Không có bài hát nào được chọn để thêm vào danh sách yêu thích.", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("No song selected to add to the favorite list.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
             else
             {
-                MessageBox.Show("Vui lòng chọn một bài hát từ playlist.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Please select a song from the playlist.", "Notice", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
+
 
 
         private async Task LoadFavoriteList()
@@ -566,18 +589,16 @@ namespace MusicPlayList
                 {
                     int userId = CurrentUser.UserId;
 
-                    FavoriteService favoriteService = new FavoriteService();
-
                     // Lấy danh sách bài hát yêu thích
-                    var favoriteSongs = await favoriteService.GetFavoritesByUserIdAsync(userId);
-
+                    var favoriteSongs = await _favoriteService.GetFavoritesByUserIdAsync(userId);
                     // Làm sạch danh sách trước khi thêm mới
                     FavoriteListBox.Items.Clear();
 
                     // Hiển thị các bài hát yêu thích
                     foreach (var song in favoriteSongs)
                     {
-                        FavoriteListBox.Items.Add(song);  // Thêm đối tượng Song vào FavoriteListBox
+                        Song addSong = await _songService.GetSongByIdAsync((int)song.SongId);
+                        FavoriteListBox.Items.Add(addSong);  // Thêm đối tượng Song vào FavoriteListBox
                     }
                 }
                 catch (Exception ex)
@@ -612,7 +633,7 @@ namespace MusicPlayList
         //    }
         //}
 
-        public async void LoadTitleAllSongs()
+        public async Task LoadTitleAllSongs()
         {
             try
             {
@@ -634,6 +655,7 @@ namespace MusicPlayList
                                 "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
         private void PlaylistListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (playlistListBox.SelectedItem != null)
@@ -654,7 +676,7 @@ namespace MusicPlayList
                 if (selectedSong != null)
                 {
                     var album = selectedSong.Album;
-                    txtText.Text = selectedSong.Title;
+                    txtText.Text = $"{selectedSong.Title}  {selectedSong.Artist}";
 
                     if (File.Exists(album))
                     {
@@ -764,7 +786,7 @@ namespace MusicPlayList
             // Play the selected song
             var nextSong = songList[nextSongIndex];
             var album = nextSong.Album;
-            txtText.Text = nextSong.Title;
+            txtText.Text = $"{nextSong.Title}  {nextSong.Artist}";
 
             if (File.Exists(album))
             {
@@ -793,7 +815,7 @@ namespace MusicPlayList
             {
                 var nextSong = songList[currentIndex + 1];
                 var album = nextSong.Album;
-                txtText.Text = nextSong.Title;
+                txtText.Text = $"{nextSong.Title}  {nextSong.Artist}";
 
                 if (File.Exists(album))
                 {
@@ -814,7 +836,7 @@ namespace MusicPlayList
                 // Reached the end of the list, go back to the first song
                 var firstSong = songList[0];
                 var album = firstSong.Album;
-                txtText.Text = firstSong.Title;
+                txtText.Text = $"{firstSong.Title}  {firstSong.Artist}";
 
                 if (File.Exists(album))
                 {
@@ -975,6 +997,80 @@ namespace MusicPlayList
         private void StopMusic()
         {
             isPlaying = false;
+        }
+
+        private async void LoadPlaylist()
+        {
+            try
+            {
+                playlist = await _songService.GetAllSongsAsync();
+                // Bind playlist to UI, e.g., ListBox or DataGrid
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading playlist: {ex.Message}");
+            }
+        }
+
+        private async void AddSongToPlaylist(Song song)
+        {
+            try
+            {
+                await _songService.AddSongAsync(song);
+                playlist.Add(song);
+                // Update UI
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error adding song: {ex.Message}");
+            }
+        }
+
+        private async void RemoveSongFromPlaylist(Song song)
+        {
+            try
+            {
+                await _songService.RemoveSongAsync(song);
+                playlist.Remove(song);
+                // Update UI
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error removing song: {ex.Message}");
+            }
+        }
+
+        private void InitializeTimer()
+        {
+            timer = new DispatcherTimer();
+            timer.Interval = TimeSpan.FromSeconds(1);
+            timer.Tick += Timer_Tick;
+        }
+
+        private async void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            string query = SearchBox.Text.ToLower();
+
+            // Search in the playlist
+            var filteredPlaylistSongs = await _songService.SearchSongsAsync(query);
+
+            // Search in the favorite list
+            var favoriteSongs = await _favoriteService.GetFavoritesByUserIdAsync(CurrentUser.UserId);
+            var filteredFavoriteSongs = favoriteSongs.Where(s => s.Title.ToLower().Contains(query) || s.Artist.ToLower().Contains(query)).ToList();
+
+            // Update the playlistListBox
+            playlistListBox.Items.Clear();
+            foreach (var song in filteredPlaylistSongs)
+            {
+                playlistListBox.Items.Add(song.Title);
+            }
+
+            // Update the FavoriteListBox
+            FavoriteListBox.Items.Clear();
+            foreach (var song in filteredFavoriteSongs)
+            {
+                FavoriteListBox.Items.Add(song);
+            }
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-
 namespace MusicPlayApp.DAL.Entities;
 
 public partial class FavoriteList
@@ -9,7 +8,7 @@ public partial class FavoriteList
 
     public int UserId { get; set; }
 
-    public int SongId { get; set; }
+    public int? SongId { get; set; }
 
     public string ListName { get; set;}
 

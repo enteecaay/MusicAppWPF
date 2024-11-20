@@ -5,7 +5,7 @@ namespace MusicPlayApp.DAL.Entities;
 
 public partial class Song
 {
-    public int SongId { get; set; }
+    public int? SongId { get; set; }
 
     public string Title { get; set; }
 
